@@ -109,19 +109,19 @@ class QuizApp {
         document.getElementById('q-text').innerText = q.question_text;
 
         // Diagram handling
-        if (q.diagram_image_path) {
+        const diagramPath = this.resolveDiagramPath(q.diagram_image_path);
+        if (diagramPath) {
             card.classList.add('has-diagram');
             diagramSide.style.display = 'flex';
-
-            // Clean path for local server
-            let cleanPath = q.diagram_image_path;
-            if (cleanPath.includes('1-Exam-Topics\\')) {
-                cleanPath = cleanPath.split('1-Exam-Topics\\')[1];
-            }
-            diagramImg.src = cleanPath;
+            diagramImg.src = diagramPath;
+            diagramImg.onerror = () => {
+                card.classList.remove('has-diagram');
+                diagramSide.style.display = 'none';
+            };
         } else {
             card.classList.remove('has-diagram');
             diagramSide.style.display = 'none';
+            diagramImg.removeAttribute('src');
         }
 
         // Options
@@ -137,9 +137,9 @@ class QuizApp {
         const container = document.getElementById('options-container');
         container.innerHTML = '';
 
-        if (!q.options) return;
+        const options = this.normalizeOptions(q.options);
+        if (!options) return;
 
-        const options = q.options;
         const keys = Object.keys(options).sort();
 
         keys.forEach(key => {
@@ -148,8 +148,9 @@ class QuizApp {
 
             // If already answered
             if (this.userAnswers[this.currentIndex] !== undefined) {
-                if (key === q.correct_option) btn.classList.add('correct');
-                if (key === this.userAnswers[this.currentIndex] && key !== q.correct_option) btn.classList.add('wrong');
+                const correctOption = this.normalizeCorrectOption(q.correct_option, options);
+                if (correctOption && key === correctOption) btn.classList.add('correct');
+                if (correctOption && key === this.userAnswers[this.currentIndex] && key !== correctOption) btn.classList.add('wrong');
                 btn.disabled = true;
                 this.showExplanation();
             }
@@ -201,11 +202,60 @@ class QuizApp {
         if (answeredCount > 0) {
             let correctCount = 0;
             Object.entries(this.userAnswers).forEach(([idx, key]) => {
-                if (key === this.currentSet[idx].correct_option) correctCount++;
+                const q = this.currentSet[idx];
+                const options = this.normalizeOptions(q.options);
+                const correctOption = this.normalizeCorrectOption(q.correct_option, options || {});
+                if (correctOption && key === correctOption) correctCount++;
             });
             const accuracy = (correctCount / answeredCount) * 100;
             document.getElementById('accuracy-val').innerText = `${Math.round(accuracy)}%`;
         }
+    }
+
+    normalizeOptions(options) {
+        if (!options || typeof options !== 'object') return null;
+
+        const normalized = {};
+        Object.entries(options).forEach(([k, v]) => {
+            const key = String(k).trim().toUpperCase();
+            const value = String(v || '').trim();
+            if (key && value) {
+                normalized[key] = value;
+            }
+        });
+
+        return Object.keys(normalized).length ? normalized : null;
+    }
+
+    normalizeCorrectOption(correctOption, options) {
+        if (!correctOption) return null;
+
+        const normalized = String(correctOption).trim().toUpperCase();
+        if (options[normalized] !== undefined) return normalized;
+
+        const idx = Number.parseInt(normalized, 10);
+        if (!Number.isNaN(idx)) {
+            const keys = Object.keys(options).sort();
+            if (idx >= 0 && idx < keys.length) return keys[idx];
+            if (idx >= 1 && idx <= keys.length) return keys[idx - 1];
+        }
+
+        return null;
+    }
+
+    resolveDiagramPath(rawPath) {
+        if (!rawPath || typeof rawPath !== 'string') return null;
+
+        let normalized = rawPath.replaceAll('\\', '/').trim();
+        if (!normalized) return null;
+
+        const extractedDiagramsIndex = normalized.toLowerCase().indexOf('extracted_diagrams/');
+        if (extractedDiagramsIndex >= 0) {
+            return normalized.slice(extractedDiagramsIndex);
+        }
+
+        const filename = normalized.split('/').pop();
+        return filename ? `extracted_diagrams/${filename}` : null;
     }
 
     nextQuestion() {
