@@ -1,0 +1,684 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rank Board â€” SSC Math</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0a0e1a;
+            --bg2: #0f1628;
+            --bg3: #1a2040;
+            --gold: #f59e0b;
+            --silver: #94a3b8;
+            --bronze: #b45309;
+            --blue: #3b82f6;
+            --green: #10b981;
+            --red: #ef4444;
+            --text: #e2e8f0;
+            --muted: #475569;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+        }
+
+        .screen {
+            display: none;
+            min-height: 100vh;
+        }
+
+        .screen.active {
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* â”€â”€â”€ HOME â”€â”€â”€ */
+        #home {
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            background: radial-gradient(ellipse at 50% 0%, rgba(245, 158, 11, 0.15), transparent 60%), var(--bg);
+            padding: 2rem;
+        }
+
+        .trophy {
+            font-size: 5rem;
+            margin-bottom: 1rem;
+        }
+
+        .home-title {
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 3rem;
+            font-weight: 700;
+            text-align: center;
+            letter-spacing: 2px;
+        }
+
+        .home-title span {
+            color: var(--gold);
+        }
+
+        .home-sub {
+            color: var(--muted);
+            margin-bottom: 3rem;
+            text-align: center;
+        }
+
+        .home-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+            max-width: 560px;
+            width: 100%;
+            margin-bottom: 2.5rem;
+        }
+
+        .topic-btn {
+            background: var(--bg2);
+            border: 1px solid rgba(245, 158, 11, 0.2);
+            border-radius: 16px;
+            padding: 1.5rem;
+            cursor: pointer;
+            transition: all 0.25s;
+        }
+
+        .topic-btn:hover {
+            border-color: var(--gold);
+            background: rgba(245, 158, 11, 0.05);
+            transform: translateY(-2px);
+        }
+
+        .topic-btn.selected {
+            border-color: var(--gold);
+            background: rgba(245, 158, 11, 0.1);
+        }
+
+        .tb-icon {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .tb-name {
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--gold);
+        }
+
+        .tb-count {
+            font-size: 0.75rem;
+            color: var(--muted);
+        }
+
+        .start-btn {
+            background: linear-gradient(135deg, var(--gold), #d97706);
+            color: #0a0e1a;
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 1.1rem;
+            font-weight: 700;
+            padding: 1rem 3rem;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            letter-spacing: 1px;
+            transition: transform 0.2s;
+        }
+
+        .start-btn:hover {
+            transform: scale(1.04);
+        }
+
+        /* â”€â”€â”€ EXAM â”€â”€â”€ */
+        #exam {
+            flex-direction: row;
+            overflow: hidden;
+            height: 100vh;
+        }
+
+        /* Left Panel */
+        .left-panel {
+            width: 280px;
+            background: var(--bg2);
+            border-right: 1px solid rgba(245, 158, 11, 0.1);
+            display: flex;
+            flex-direction: column;
+            flex-shrink: 0;
+            padding: 1.5rem;
+        }
+
+        .lp-title {
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--gold);
+            margin-bottom: 1.5rem;
+        }
+
+        .chapter-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            margin-bottom: auto;
+        }
+
+        .chap-item {
+            padding: 0.75rem 1rem;
+            border-radius: 10px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            transition: background 0.15s;
+            font-size: 0.9rem;
+        }
+
+        .chap-item:hover {
+            background: var(--bg3);
+        }
+
+        .chap-item.active {
+            background: rgba(245, 158, 11, 0.1);
+            border-left: 3px solid var(--gold);
+        }
+
+        .chap-icon {
+            font-size: 1.2rem;
+        }
+
+        .chap-name {
+            flex: 1;
+        }
+
+        .chap-prog {
+            font-size: 0.75rem;
+            color: var(--muted);
+        }
+
+        .score-panel {
+            margin-top: 1.5rem;
+            background: var(--bg3);
+            border-radius: 14px;
+            padding: 1.25rem;
+        }
+
+        .sp-score {
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--gold);
+        }
+
+        .sp-label {
+            font-size: 0.75rem;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .sp-row {
+            display: flex;
+            gap: 1rem;
+            margin-top: 0.75rem;
+        }
+
+        .sp-item {
+            flex: 1;
+            text-align: center;
+        }
+
+        .sp-item-val {
+            font-weight: 700;
+            font-size: 1rem;
+        }
+
+        .sp-item-lbl {
+            font-size: 0.65rem;
+            color: var(--muted);
+        }
+
+        /* Main area */
+        .main-area {
+            flex: 1;
+            overflow-y: auto;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .question-block {
+            background: var(--bg2);
+            border: 1px solid rgba(245, 158, 11, 0.1);
+            border-radius: 18px;
+            padding: 2rem;
+        }
+
+        .qb-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .qb-num {
+            background: rgba(245, 158, 11, 0.15);
+            border-radius: 8px;
+            padding: 0.25rem 0.75rem;
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--gold);
+        }
+
+        .qb-topic {
+            font-size: 0.75rem;
+            color: var(--muted);
+        }
+
+        .qb-text {
+            font-size: 1rem;
+            line-height: 1.7;
+            margin-bottom: 1.5rem;
+        }
+
+        .qb-img {
+            max-width: 100%;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+        }
+
+        .qb-opts {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.6rem;
+        }
+
+        .qo-btn {
+            background: var(--bg3);
+            border: 1px solid rgba(245, 158, 11, 0.1);
+            border-radius: 10px;
+            padding: 0.75rem 1rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            transition: all 0.15s;
+            font-size: 0.9rem;
+            color: var(--text);
+        }
+
+        .qo-btn:hover:not(:disabled) {
+            border-color: var(--blue);
+            background: rgba(59, 130, 246, 0.1);
+        }
+
+        .qo-btn.correct {
+            border-color: var(--green) !important;
+            background: rgba(16, 185, 129, 0.1) !important;
+        }
+
+        .qo-btn.wrong {
+            border-color: var(--red) !important;
+            background: rgba(239, 68, 68, 0.1) !important;
+        }
+
+        .qo-ltr {
+            width: 26px;
+            height: 26px;
+            border-radius: 6px;
+            background: rgba(245, 158, 11, 0.15);
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--gold);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .qo-btn.correct .qo-ltr {
+            background: var(--green);
+            color: #fff;
+        }
+
+        .qo-btn.wrong .qo-ltr {
+            background: var(--red);
+            color: #fff;
+        }
+
+        /* Right Panel - Leaderboard */
+        .right-panel {
+            width: 240px;
+            background: var(--bg2);
+            border-left: 1px solid rgba(245, 158, 11, 0.1);
+            padding: 1.5rem;
+            flex-shrink: 0;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .lb-title {
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--gold);
+            margin-bottom: 1rem;
+        }
+
+        .lb-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .lb-item {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            padding: 0.6rem 0.75rem;
+            border-radius: 8px;
+        }
+
+        .lb-item.me {
+            background: rgba(245, 158, 11, 0.1);
+            border: 1px solid rgba(245, 158, 11, 0.2);
+        }
+
+        .lb-rank {
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 1rem;
+            font-weight: 700;
+            width: 20px;
+        }
+
+        .lb-rank.gold {
+            color: var(--gold);
+        }
+
+        .lb-rank.silver {
+            color: var(--silver);
+        }
+
+        .lb-rank.bronze {
+            color: var(--bronze);
+        }
+
+        .lb-avatar {
+            font-size: 1.2rem;
+        }
+
+        .lb-info {
+            flex: 1;
+        }
+
+        .lb-name {
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .lb-score {
+            font-size: 0.7rem;
+            color: var(--muted);
+        }
+
+        .lb-pts {
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: var(--gold);
+        }
+
+        /* Score float */
+        .pts-float {
+            position: fixed;
+            pointer-events: none;
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--gold);
+            animation: floatPts 1s ease forwards;
+            z-index: 999;
+        }
+
+        @keyframes floatPts {
+            0% {
+                opacity: 1;
+                transform: translateY(0)
+            }
+
+            100% {
+                opacity: 0;
+                transform: translateY(-60px)
+            }
+        }
+
+        @media(max-width:900px) {
+            .right-panel {
+                display: none;
+            }
+
+            .left-panel {
+                width: 220px;
+            }
+        }
+
+        @media(max-width:600px) {
+            #exam {
+                flex-direction: column;
+            }
+
+            .left-panel {
+                width: 100%;
+                height: auto;
+            }
+
+            .qb-opts {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- â•â•â•â•â•â•â•â•â•â• HOME â•â•â•â•â•â•â•â•â•â• -->
+    <div class="screen active" id="home">
+        <div class="trophy">ðŸ†</div>
+        <h1 class="home-title">RANK <span>BOARD</span></h1>
+        <p class="home-sub">Climb the leaderboard â€” Algebra, Ratios & Sequences</p>
+        <div class="home-grid" id="topic-grid"></div>
+        <button class="start-btn" onclick="startExam()">ENTER ARENA â†’</button>
+    </div>
+
+    <!-- â•â•â•â•â•â•â•â•â•â• EXAM â•â•â•â•â•â•â•â•â•â• -->
+    <div class="screen" id="exam">
+        <div class="left-panel">
+            <div class="lp-title">ðŸ“š CHAPTERS</div>
+            <div class="chapter-list" id="chapter-list"></div>
+            <div class="score-panel">
+                <div class="sp-label">Your Score</div>
+                <div class="sp-score" id="sp-score">0</div>
+                <div class="sp-row">
+                    <div class="sp-item">
+                        <div class="sp-item-val" id="sp-correct" style="color:var(--green)">0</div>
+                        <div class="sp-item-lbl">Correct</div>
+                    </div>
+                    <div class="sp-item">
+                        <div class="sp-item-val" id="sp-wrong" style="color:var(--red)">0</div>
+                        <div class="sp-item-lbl">Wrong</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="main-area" id="main-area"></div>
+        <div class="right-panel">
+            <div class="lb-title">ðŸ… LEADERBOARD</div>
+            <div class="lb-list" id="lb-list"></div>
+        </div>
+    </div>
+
+    <script>
+        const CHAPTERS = [
+            { id: 'algebra', icon: 'ðŸ“', name: 'Algebra', desc: 'Variables & Expressions' },
+            { id: 'ratio_proportion', icon: 'âš–ï¸', name: 'Ratio & Proportion', desc: 'Comparative Quantities' },
+            { id: 'sequence_series', icon: 'ðŸ“Š', name: 'Sequences & Series', desc: 'Patterns & Progressions' },
+            { id: 'set_theory', icon: 'ðŸ”µ', name: 'Set Theory', desc: 'Union, Intersection & More' },
+        ];
+        const MAX_QS_PER_CHAPTER = 10;
+        const BOARD_PLAYERS = [
+            { name: 'Aryan K.', avatar: 'ðŸ¦', score: 1450 }, { name: 'Priya M.', avatar: 'ðŸ¦Š', score: 1320 }, { name: 'Rahul V.', avatar: 'ðŸ¯', score: 1180 },
+            { name: 'Sneha P.', avatar: 'ðŸ¦…', score: 970 }, { name: 'Vikram R.', avatar: 'ðŸ»', score: 830 },
+        ];
+
+        let allData = {}, selectedTopics = new Set(), questions = {}, score = 0, correct = 0, wrong = 0, answeredMap = {};
+
+        function resolveDiagramSrc(question) {
+            const raw = question?.diagram_image_path;
+            if (!raw) return null;
+            const path = String(raw).replace(/\\/g, '/');
+            const marker = 'temp_extraction/extracted_diagrams/';
+            const markerIndex = path.toLowerCase().indexOf(marker);
+            if (markerIndex >= 0) return `../../${path.slice(markerIndex)}`;
+            if (path.startsWith('temp_extraction/')) return `../../${path}`;
+            return path;
+        }
+
+        async function loadData() {
+            const r = await fetch('../../temp_extraction/ssc_math_database_images_clean.json');
+            const raw = await r.json();
+            CHAPTERS.forEach(c => { allData[c.id] = raw.filter(q => q.topic === c.id); });
+            buildHome();
+        }
+
+        function buildHome() {
+            const grid = document.getElementById('topic-grid');
+            CHAPTERS.forEach(c => {
+                const div = document.createElement('div');
+                div.className = 'topic-btn selected'; div.dataset.id = c.id;
+                div.innerHTML = `<div class="tb-icon">${c.icon}</div><div class="tb-name">${c.name}</div><div class="tb-count">${allData[c.id].length} Questions</div>`;
+                div.onclick = () => { div.classList.toggle('selected'); };
+                selectedTopics.add(c.id);
+                grid.appendChild(div);
+            });
+        }
+
+        function startExam() {
+            const selected = [...document.querySelectorAll('.topic-btn.selected')].map(b => b.dataset.id);
+            if (!selected.length) { alert('Select at least one chapter!'); return; }
+            score = 0; correct = 0; wrong = 0; answeredMap = {};
+            selected.forEach(id => {
+                const maxCount = Math.min(MAX_QS_PER_CHAPTER, allData[id].length);
+                const shuffled = [...allData[id]].sort(() => Math.random() - 0.5).slice(0, maxCount);
+                questions[id] = shuffled;
+            });
+            showScreen('exam');
+            buildChapterList(selected);
+            loadChapter(selected[0]);
+            buildLeaderboard();
+        }
+
+        function buildChapterList(ids) {
+            const list = document.getElementById('chapter-list');
+            list.innerHTML = '';
+            ids.forEach(id => {
+                const c = CHAPTERS.find(x => x.id === id);
+                const div = document.createElement('div');
+                div.className = 'chap-item'; div.dataset.id = id; div.id = `chap-${id}`;
+                const total = (questions[id] || []).length;
+                div.innerHTML = `<div class="chap-icon">${c.icon}</div><div class="chap-name">${c.name}</div><div class="chap-prog" id="prog-${id}">0/${total}</div>`;
+                div.onclick = () => loadChapter(id);
+                list.appendChild(div);
+            });
+        }
+
+        function loadChapter(id) {
+            document.querySelectorAll('.chap-item').forEach(el => el.classList.remove('active'));
+            document.getElementById(`chap-${id}`)?.classList.add('active');
+            const main = document.getElementById('main-area');
+            main.innerHTML = '';
+            (questions[id] || []).forEach((q, i) => {
+                const key = `${id}_${i}`;
+                const div = document.createElement('div'); div.className = 'question-block';
+                const diagramSrc = resolveDiagramSrc(q);
+                const img = diagramSrc ? `<img class="qb-img" src="${diagramSrc}" onerror="this.style.display='none'">` : '';
+                const opts = q.options || {};
+                let optsHTML = '';
+                ['A', 'B', 'C', 'D'].forEach(l => {
+                    if (!opts[l]) return;
+                    const done = answeredMap[key];
+                    const isCorrect = l === q.correct_option;
+                    const cls = done ? (isCorrect ? 'correct' : (done === l ? 'wrong' : '')) : '';
+                    optsHTML += `<button class="qo-btn ${cls}" onclick="selectOpt('${key}','${l}','${q.correct_option}',this)" ${done ? 'disabled' : ''} data-l="${l}"><div class="qo-ltr">${l}</div><span>${opts[l]}</span></button>`;
+                });
+                div.innerHTML = `<div class="qb-header"><div class="qb-num">Q${i + 1}</div><div class="qb-topic">${q.topic.replace('_', ' ')}</div></div><div class="qb-text">${q.question_text || ''}</div>${img}<div class="qb-opts">${optsHTML}</div>`;
+                main.appendChild(div);
+            });
+        }
+
+        function selectOpt(key, chosen, correct_opt, btn) {
+            if (answeredMap[key]) return;
+            answeredMap[key] = chosen;
+            const container = btn.closest('.qb-opts');
+            container.querySelectorAll('.qo-btn').forEach(b => {
+                b.disabled = true;
+                const l = b.getAttribute('data-l');
+                if (l === correct_opt) b.classList.add('correct');
+                else if (l === chosen && chosen !== correct_opt) b.classList.add('wrong');
+            });
+            if (chosen === correct_opt) { correct++; score += 15; } else wrong++;
+            document.getElementById('sp-score').textContent = score;
+            document.getElementById('sp-correct').textContent = correct;
+            document.getElementById('sp-wrong').textContent = wrong;
+
+            const [topic, idx] = key.split('_');
+            const answered = Object.keys(answeredMap).filter(k => k.startsWith(topic)).length;
+            const total = (questions[topic] || []).length;
+            document.getElementById(`prog-${topic}`).textContent = `${answered}/${total}`;
+
+            if (chosen === correct_opt) floatPts('+15', btn);
+            buildLeaderboard();
+        }
+
+        function buildLeaderboard() {
+            const list = document.getElementById('lb-list');
+            const players = [...BOARD_PLAYERS, { name: 'You', avatar: 'â­', score, me: true }].sort((a, b) => b.score - a.score);
+            list.innerHTML = '';
+            players.slice(0, 6).forEach((p, i) => {
+                const div = document.createElement('div');
+                div.className = 'lb-item' + (p.me ? ' me' : '');
+                const rankColors = ['gold', 'silver', 'bronze', '', '', ''];
+                div.innerHTML = `<div class="lb-rank ${rankColors[i] || ''}">${i + 1}</div><div class="lb-avatar">${p.avatar}</div><div class="lb-info"><div class="lb-name">${p.me ? '<strong>You</strong>' : p.name}</div></div><div class="lb-pts">${p.score}</div>`;
+                list.appendChild(div);
+            });
+        }
+
+        function floatPts(text, nearEl) {
+            const el = document.createElement('div'); el.className = 'pts-float'; el.textContent = text;
+            const r = nearEl.getBoundingClientRect();
+            el.style.left = r.left + 'px'; el.style.top = r.top + 'px';
+            document.body.appendChild(el); setTimeout(() => el.remove(), 1000);
+        }
+        function showScreen(id) { document.querySelectorAll('.screen').forEach(s => s.classList.remove('active')); document.getElementById(id).classList.add('active'); }
+        loadData();
+    </script>
+</body>
+
+</html>
+
+
+

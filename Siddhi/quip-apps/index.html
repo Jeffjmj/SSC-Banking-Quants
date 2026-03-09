@@ -1,0 +1,313 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SSC Math Mode Hub</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #f6f8ff;
+      --ink: #101633;
+      --muted: #586184;
+      --card: #ffffff;
+      --border: #d7def4;
+      --mission: #0f766e;
+      --exam: #1d4ed8;
+      --speed: #b45309;
+      --rank: #4338ca;
+      --mastery: #0f766e;
+      --analytics: #be185d;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      min-height: 100vh;
+      font-family: "IBM Plex Sans", sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 8% 12%, #dff5ff 0, transparent 28%),
+        radial-gradient(circle at 92% 88%, #ffe7d6 0, transparent 22%),
+        linear-gradient(145deg, #f8fbff 0%, #eef2ff 48%, #fdf7ff 100%);
+    }
+
+    .shell {
+      width: min(1200px, 94vw);
+      margin: 0 auto;
+      padding: 2rem 0 2.5rem;
+    }
+
+    .hero {
+      border: 1px solid var(--border);
+      border-radius: 26px;
+      background: rgba(255, 255, 255, 0.8);
+      backdrop-filter: blur(6px);
+      padding: clamp(1.2rem, 2.3vw, 2rem);
+      margin-bottom: 1.3rem;
+      box-shadow: 0 14px 42px rgba(16, 22, 51, 0.08);
+    }
+
+    .hero h1 {
+      font-family: "Sora", sans-serif;
+      font-size: clamp(1.4rem, 3vw, 2.35rem);
+      line-height: 1.2;
+      letter-spacing: -0.03em;
+      margin-bottom: 0.45rem;
+    }
+
+    .hero p { color: var(--muted); margin-bottom: 1.05rem; }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 0.8rem;
+    }
+
+    .stat {
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 0.75rem 0.9rem;
+      background: #fff;
+    }
+
+    .stat .v {
+      font-family: "Sora", sans-serif;
+      font-weight: 700;
+      font-size: 1.35rem;
+    }
+
+    .stat .l {
+      color: var(--muted);
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
+      gap: 0.95rem;
+    }
+
+    .card {
+      text-decoration: none;
+      color: inherit;
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      background: var(--card);
+      padding: 1rem;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 8px 24px rgba(16, 22, 51, 0.07);
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 12px 30px rgba(16, 22, 51, 0.13);
+    }
+
+    .accent {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+    }
+
+    .row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      margin-bottom: 0.45rem;
+    }
+
+    .name {
+      font-family: "Sora", sans-serif;
+      font-weight: 700;
+      font-size: 1.08rem;
+      line-height: 1.2;
+      display: flex;
+      gap: 0.45rem;
+      align-items: center;
+    }
+
+    .count {
+      font-size: 0.8rem;
+      color: var(--muted);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 0.26rem 0.56rem;
+      white-space: nowrap;
+      background: #f8faff;
+    }
+
+    .desc {
+      color: var(--muted);
+      font-size: 0.92rem;
+      margin-bottom: 0.65rem;
+      min-height: 2.2rem;
+    }
+
+    .topics {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+    }
+
+    .chip {
+      border-radius: 999px;
+      font-size: 0.73rem;
+      padding: 0.24rem 0.52rem;
+      border: 1px solid var(--border);
+      background: #fafcff;
+      color: #36406b;
+    }
+
+    .loading { margin-top: 0.6rem; color: var(--muted); font-size: 0.9rem; }
+
+    .loading.error {
+      color: #991b1b;
+      font-weight: 600;
+    }
+  </style>
+</head>
+
+<body>
+  <main class="shell">
+    <section class="hero">
+      <h1>SSC Math Practice Hub</h1>
+      <p>Six focused web apps built from <code>ssc_math_database_images_clean.json</code>.</p>
+      <div class="stats">
+        <div class="stat"><div class="v" id="total-q">0</div><div class="l">Total Questions</div></div>
+        <div class="stat"><div class="v" id="topic-count">0</div><div class="l">Topics Covered</div></div>
+        <div class="stat"><div class="v" id="mode-count">6</div><div class="l">Mode Apps</div></div>
+      </div>
+      <div class="loading" id="loading-note">Loading dataset...</div>
+    </section>
+
+    <section class="grid" id="mode-grid"></section>
+  </main>
+
+  <script>
+    const MODES = [
+      {
+        id: 'mission-mode',
+        icon: '🎮',
+        name: 'Mission Mode',
+        description: 'XP, streaks, mission cards, and chapter progression.',
+        topics: ['percentage', 'profit_loss', 'average', 'mixture_alligation'],
+        color: 'var(--mission)',
+      },
+      {
+        id: 'exam-simulator',
+        icon: '📋',
+        name: 'Exam Simulator',
+        description: 'Timed exam flow with palette navigation and review.',
+        topics: ['geometry', 'mensuration', 'trigonometry'],
+        color: 'var(--exam)',
+      },
+      {
+        id: 'speed-drill',
+        icon: '⚡',
+        name: 'Speed Drill',
+        description: 'Rapid-fire runs with countdown pressure and combo scoring.',
+        topics: ['simplification', 'number_system', 'arithmetic', 'quadratic_equations'],
+        color: 'var(--speed)',
+      },
+      {
+        id: 'rank-board',
+        icon: '🏆',
+        name: 'Rank Board',
+        description: 'Compete chapter-wise and track your leaderboard score.',
+        topics: ['algebra', 'ratio_proportion', 'sequence_series', 'set_theory'],
+        color: 'var(--rank)',
+      },
+      {
+        id: 'topic-mastery-map',
+        icon: '🗺️',
+        name: 'Topic Mastery Map',
+        description: 'Unlock a skill-map path for work-rate and motion problems.',
+        topics: ['time_work', 'time_speed_distance'],
+        color: 'var(--mastery)',
+      },
+      {
+        id: 'analytics-first',
+        icon: '📊',
+        name: 'Analytics-First',
+        description: 'All topics dashboard with practice and performance views.',
+        topics: null,
+        color: 'var(--analytics)',
+      },
+    ];
+
+    const TOPIC_LABELS = {
+      algebra: 'Algebra', arithmetic: 'Arithmetic', average: 'Average', geometry: 'Geometry', mensuration: 'Mensuration',
+      mixture_alligation: 'Mixture & Alligation', number_system: 'Number System', percentage: 'Percentage', profit_loss: 'Profit & Loss',
+      quadratic_equations: 'Quadratic Equations', ratio_proportion: 'Ratio & Proportion', sequence_series: 'Sequence & Series',
+      set_theory: 'Set Theory', simplification: 'Simplification', time_speed_distance: 'Time, Speed & Distance',
+      time_work: 'Time & Work', trigonometry: 'Trigonometry', other: 'Other'
+    };
+
+    function formatTopic(topic) { return TOPIC_LABELS[topic] || topic.replaceAll('_', ' '); }
+
+    function countByTopic(dataset) {
+      const counts = {};
+      for (const q of dataset) {
+        const topic = q.topic || 'other';
+        counts[topic] = (counts[topic] || 0) + 1;
+      }
+      return counts;
+    }
+
+    function renderModes(dataset) {
+      const counts = countByTopic(dataset);
+      const grid = document.getElementById('mode-grid');
+      grid.innerHTML = '';
+
+      MODES.forEach((mode) => {
+        const total = mode.topics ? mode.topics.reduce((sum, t) => sum + (counts[t] || 0), 0) : dataset.length;
+        const chips = (mode.topics || Object.keys(counts)).map((topic) => `<span class="chip">${formatTopic(topic)}</span>`).join('');
+
+        const card = document.createElement('a');
+        card.href = `./${mode.id}/index.html`;
+        card.className = 'card';
+        card.innerHTML = `
+          <div class="accent" style="background:${mode.color};"></div>
+          <div class="row">
+            <div class="name"><span>${mode.icon}</span><span>${mode.name}</span></div>
+            <div class="count">${total} Qs</div>
+          </div>
+          <div class="desc">${mode.description}</div>
+          <div class="topics">${chips}</div>
+        `;
+        grid.appendChild(card);
+      });
+
+      document.getElementById('total-q').textContent = dataset.length.toLocaleString();
+      document.getElementById('topic-count').textContent = Object.keys(counts).length.toString();
+      document.getElementById('loading-note').textContent = 'Counts loaded from clean JSON.';
+    }
+
+    async function init() {
+      try {
+        const response = await fetch('../temp_extraction/ssc_math_database_images_clean.json');
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        const data = await response.json();
+        renderModes(Array.isArray(data) ? data : []);
+      } catch (error) {
+        console.error(error);
+        const note = document.getElementById('loading-note');
+        note.textContent = 'Could not load dataset. If this page was opened with file://, start a local server and open it over http://localhost instead.';
+        note.classList.add('error');
+      }
+    }
+
+    init();
+  </script>
+</body>
+</html>

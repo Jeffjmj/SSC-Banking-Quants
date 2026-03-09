@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analytics Dashboard — SSC Math</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        :root {
+            --bg: #f8fafc;
+            --white: #fff;
+            --text: #0f172a;
+            --muted: #64748b;
+            --border: #e2e8f0;
+            --blue: #2563eb;
+            --green: #16a34a;
+            --red: #dc2626;
+            --amber: #d97706;
+            --purple: #7c3aed;
+            --indigo: #4338ca;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Inter', sans-serif;
+        }
+
+        /* Layout */
+        .app {
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .sidebar {
+            width: 260px;
+            background: var(--white);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            flex-shrink: 0;
+            overflow-y: auto;
+        }
+
+        .main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .top-bar {
+            background: var(--white);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1.5rem;
+        }
+
+        .status-banner {
+            display: none;
+            margin-bottom: 1rem;
+            padding: 0.9rem 1rem;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            background: #fff;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        .status-banner.show {
+            display: block;
+        }
+
+        .status-banner.info {
+            border-color: #bfdbfe;
+            background: #eff6ff;
+            color: #1e3a8a;
+        }
+
+        .status-banner.error {
+            border-color: #fecaca;
+            background: #fef2f2;
+            color: #991b1b;
+        }
+
+        /* Sidebar */
+        .sb-logo {
+            padding: 1.25rem 1.5rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .sb-logo-icon {
+            width: 36px;
+            height: 36px;
+            background: linear-gradient(135deg, var(--blue), var(--indigo));
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+        }
+
+        .sb-logo-text {
+            font-weight: 700;
+            font-size: 0.95rem;
+        }
+
+        .sb-section {
+            padding: 0.75rem 1rem;
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .sb-item {
+            padding: 0.6rem 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            cursor: pointer;
+            font-size: 0.9rem;
+            border-left: 3px solid transparent;
+            transition: all 0.15s;
+        }
+
+        .sb-item:hover {
+            background: var(--bg);
+        }
+
+        .sb-item.active {
+            background: #eff6ff;
+            border-left-color: var(--blue);
+            color: var(--blue);
+            font-weight: 500;
+        }
+
+        .sb-icon {
+            font-size: 1rem;
+            width: 20px;
+            text-align: center;
+        }
+
+        .sb-count {
+            margin-left: auto;
+            background: var(--bg);
+            border-radius: 999px;
+            padding: 0.15rem 0.5rem;
+            font-size: 0.7rem;
+            color: var(--muted);
+        }
+
+        /* Top bar */
+        .tb-title {
+            font-weight: 600;
+            font-size: 1rem;
+        }
+
+        .tb-actions {
+            display: flex;
+            gap: 0.75rem;
+        }
+
+        .btn-practice {
+            background: var(--blue);
+            color: #fff;
+            border: none;
+            padding: 0.5rem 1.25rem;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            cursor: pointer;
+        }
+
+        .btn-reset {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            cursor: pointer;
+        }
+
+        /* Dashboard Cards */
+        .kpi-row {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .kpi-card {
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.25rem;
+        }
+
+        .kpi-label {
+            font-size: 0.75rem;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 0.4rem;
+        }
+
+        .kpi-val {
+            font-size: 1.75rem;
+            font-weight: 700;
+        }
+
+        .kpi-sub {
+            font-size: 0.75rem;
+            color: var(--muted);
+            margin-top: 0.25rem;
+        }
+
+        .charts-row {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .chart-card {
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.25rem;
+        }
+
+        .card-title {
+            font-weight: 600;
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+        }
+
+        .chart-wrap {
+            height: 220px;
+            position: relative;
+        }
+
+        .topics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .topic-card {
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.25rem;
+            cursor: pointer;
+            transition: border-color 0.15s;
+        }
+
+        .topic-card:hover {
+            border-color: var(--blue);
+        }
+
+        .tc-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 0.75rem;
+        }
+
+        .tc-name {
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .tc-acc {
+            font-size: 0.8rem;
+            font-weight: 600;
+            padding: 0.2rem 0.6rem;
+            border-radius: 999px;
+        }
+
+        .tc-acc.good {
+            background: #dcfce7;
+            color: var(--green);
+        }
+
+        .tc-acc.ok {
+            background: #fef3c7;
+            color: var(--amber);
+        }
+
+        .tc-acc.bad {
+            background: #fee2e2;
+            color: var(--red);
+        }
+
+        .tc-acc.empty {
+            background: var(--bg);
+            color: var(--muted);
+        }
+
+        .tc-bar {
+            background: var(--bg);
+            border-radius: 999px;
+            height: 6px;
+            overflow: hidden;
+            margin-bottom: 0.4rem;
+        }
+
+        .tc-fill {
+            height: 100%;
+            border-radius: 999px;
+        }
+
+        .tc-meta {
+            font-size: 0.75rem;
+            color: var(--muted);
+            display: flex;
+            justify-content: space-between;
+        }
+
+        /* Practice Screen */
+        #practice-screen {
+            display: none;
+        }
+
+        .practice-wrap {
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+        .practice-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .practice-title {
+            font-weight: 700;
+            font-size: 1.1rem;
+            flex: 1;
+        }
+
+        .back-btn {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            padding: 0.4rem 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.85rem;
+        }
+
+        .pq-card {
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 2rem;
+            margin-bottom: 1rem;
+        }
+
+        .pq-meta {
+            font-size: 0.75rem;
+            color: var(--muted);
+            margin-bottom: 0.75rem;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .pq-text {
+            font-size: 1rem;
+            line-height: 1.7;
+            margin-bottom: 1.25rem;
+        }
+
+        .pq-img {
+            max-width: 100%;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+
+        .pq-opts {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .pq-opt {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.15s;
+        }
+
+        .pq-opt:hover:not(:disabled) {
+            border-color: var(--blue);
+            background: #eff6ff;
+        }
+
+        .pq-opt.correct {
+            border-color: var(--green) !important;
+            background: #dcfce7 !important;
+        }
+
+        .pq-opt.wrong {
+            border-color: var(--red) !important;
+            background: #fee2e2 !important;
+        }
+
+        .pq-ltr {
+            width: 28px;
+            height: 28px;
+            border-radius: 7px;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            font-weight: 600;
+            flex-shrink: 0;
+        }
+
+        .pq-opt.correct .pq-ltr {
+            background: var(--green);
+            color: #fff;
+            border-color: var(--green);
+        }
+
+        .pq-opt.wrong .pq-ltr {
+            background: var(--red);
+            color: #fff;
+            border-color: var(--red);
+        }
+
+        .exp-box {
+            background: #f0fdf4;
+            border: 1px solid #bbf7d0;
+            border-radius: 10px;
+            padding: 1rem;
+            margin-top: 0.75rem;
+            display: none;
+        }
+
+        .exp-box p {
+            font-size: 0.85rem;
+            color: #166534;
+            line-height: 1.6;
+        }
+
+        @media(max-width:900px) {
+            .kpi-row {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .charts-row {
+                grid-template-columns: 1fr;
+            }
+
+            .sidebar {
+                display: none;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="app">
+
+        <!-- ══ SIDEBAR ══ -->
+        <div class="sidebar">
+            <div class="sb-logo">
+                <div class="sb-logo-icon">📊</div>
+                <div class="sb-logo-text">SSC Analytics</div>
+            </div>
+            <div class="sb-section">Overview</div>
+            <div class="sb-item active" onclick="showDash()">
+                <div class="sb-icon">🏠</div>Dashboard
+            </div>
+            <div class="sb-section">Topics</div>
+            <div id="sidebar-topics"></div>
+        </div>
+
+        <!-- ══ MAIN ══ -->
+        <div class="main">
+            <div class="top-bar">
+                <div class="tb-title" id="tb-title">Performance Dashboard</div>
+                <div class="tb-actions">
+                    <button class="btn-reset" onclick="resetStats()">Reset Stats</button>
+                    <button class="btn-practice" onclick="practiceWeak()">Practice Weak Topics →</button>
+                </div>
+            </div>
+            <div class="content">
+                <div class="status-banner info show" id="usage-hint">
+                    This page starts as a dashboard. Questions appear after you click a topic card or use "Practice Weak Topics".
+                </div>
+                <div class="status-banner error" id="load-error"></div>
+
+                <!-- Dashboard -->
+                <div id="dash-screen">
+                    <div class="kpi-row" id="kpi-row"></div>
+                    <div class="charts-row">
+                        <div class="chart-card">
+                            <div class="card-title">Topic Accuracy (Attempted)</div>
+                            <div class="chart-wrap"><canvas id="bar-chart"></canvas></div>
+                        </div>
+                        <div class="chart-card">
+                            <div class="card-title">Performance Breakdown</div>
+                            <div class="chart-wrap"><canvas id="pie-chart"></canvas></div>
+                        </div>
+                    </div>
+                    <div class="card-title" style="margin-bottom:1rem;">Topic Overview — Click any card to practice
+                    </div>
+                    <div class="topics-grid" id="topics-grid"></div>
+                </div>
+
+                <!-- Practice -->
+                <div id="practice-screen">
+                    <div class="practice-wrap">
+                        <div class="practice-header">
+                            <button class="back-btn" onclick="showDash()">← Back</button>
+                            <div class="practice-title" id="practice-title">Practice</div>
+                            <div id="pq-counter" style="font-size:0.85rem;color:var(--muted)"></div>
+                        </div>
+                        <div id="pq-container"></div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const TOPIC_ICONS = { algebra: '📐', arithmetic: '🔢', average: '⚖️', geometry: '📏', mensuration: '📐', mixture_alligation: '🧪', number_system: '🔣', other: '❓', percentage: '💰', profit_loss: '📈', quadratic_equations: '✏️', ratio_proportion: '⚖️', sequence_series: '📊', set_theory: '🔵', simplification: '➗', time_speed_distance: '🚀', time_work: '⚙️', trigonometry: '📐' };
+        const TOPIC_NAMES = { algebra: 'Algebra', arithmetic: 'Arithmetic', average: 'Average', geometry: 'Geometry', mensuration: 'Mensuration', mixture_alligation: 'Mixture & Alligation', number_system: 'Number System', other: 'Other', percentage: 'Percentage', profit_loss: 'Profit & Loss', quadratic_equations: 'Quadratic Equations', ratio_proportion: 'Ratio & Proportion', sequence_series: 'Sequences & Series', set_theory: 'Set Theory', simplification: 'Simplification', time_speed_distance: 'Time, Speed & Distance', time_work: 'Time & Work', trigonometry: 'Trigonometry' };
+
+        let allData = [], topicData = {}, statsData = {}, barChart = null, pieChart = null;
+
+        function resolveDiagramSrc(question) {
+            const raw = question?.diagram_image_path;
+            if (!raw) return null;
+            const path = String(raw).replace(/\\/g, '/');
+            const marker = 'temp_extraction/extracted_diagrams/';
+            const markerIndex = path.toLowerCase().indexOf(marker);
+            if (markerIndex >= 0) return `../../${path.slice(markerIndex)}`;
+            if (path.startsWith('temp_extraction/')) return `../../${path}`;
+            return path;
+        }
+
+        function loadStats() { statsData = JSON.parse(localStorage.getItem('analytics_stats') || '{}'); }
+        function saveStats() { localStorage.setItem('analytics_stats', JSON.stringify(statsData)); }
+        function setLoadError(message) {
+            const el = document.getElementById('load-error');
+            el.textContent = message;
+            el.classList.add('show');
+        }
+        function clearLoadError() {
+            const el = document.getElementById('load-error');
+            el.textContent = '';
+            el.classList.remove('show');
+        }
+
+        async function init() {
+            loadStats();
+            try {
+                const r = await fetch('../../temp_extraction/ssc_math_database_images_clean.json');
+                if (!r.ok) throw new Error(`HTTP ${r.status}`);
+                allData = await r.json();
+                allData.forEach(q => { if (!topicData[q.topic]) topicData[q.topic] = []; topicData[q.topic].push(q); });
+                clearLoadError();
+                buildSidebar();
+                renderDash();
+            } catch (error) {
+                console.error('Failed to load analytics dataset', error);
+                setLoadError('Dataset could not be loaded. If you opened this HTML directly, use a local server instead of file:// so fetch() can read the JSON.');
+            }
+        }
+
+        function buildSidebar() {
+            const el = document.getElementById('sidebar-topics');
+            Object.keys(topicData).sort().forEach(t => {
+                const div = document.createElement('div'); div.className = 'sb-item';
+                div.innerHTML = `<div class="sb-icon">${TOPIC_ICONS[t] || '📌'}</div>${TOPIC_NAMES[t] || t}<div class="sb-count">${topicData[t].length}</div>`;
+                div.onclick = () => practiceTopic(t);
+                el.appendChild(div);
+            });
+        }
+
+        function renderDash() {
+            const totalQ = allData.length;
+            const totalAns = Object.values(statsData).reduce((s, t) => (s + t.answered || 0), 0);
+            const totalCor = Object.values(statsData).reduce((s, t) => (s + t.correct || 0), 0);
+            const overallAcc = totalAns > 0 ? Math.round(totalCor / totalAns * 100) : 0;
+            const weakTopics = Object.entries(statsData).filter(([, v]) => (v.answered || 0) > 0 && (v.correct / v.answered) < 0.5).length;
+
+            const kpis = [
+                { label: 'Total Questions', val: totalQ.toLocaleString(), sub: 'Across all topics', color: 'var(--blue)' },
+                { label: 'Overall Accuracy', val: overallAcc + '%', sub: `${totalCor}/${totalAns} correct`, color: overallAcc >= 70 ? 'var(--green)' : overallAcc >= 50 ? 'var(--amber)' : 'var(--red)' },
+                { label: 'Answered', val: totalAns.toLocaleString(), sub: `${Math.round(totalAns / totalQ * 100)}% of total`, color: 'var(--purple)' },
+                { label: 'Weak Topics', val: weakTopics, sub: 'Below 50% accuracy', color: 'var(--red)' },
+            ];
+            document.getElementById('kpi-row').innerHTML = kpis.map(k => `<div class="kpi-card"><div class="kpi-label">${k.label}</div><div class="kpi-val" style="color:${k.color}">${k.val}</div><div class="kpi-sub">${k.sub}</div></div>`).join('');
+
+            // Topics grid
+            const grid = document.getElementById('topics-grid');
+            grid.innerHTML = '';
+            Object.entries(topicData).sort().forEach(([t, qs]) => {
+                const st = statsData[t] || {};
+                const answered = st.answered || 0, cor = st.correct || 0;
+                const acc = answered > 0 ? Math.round(cor / answered * 100) : null;
+                const accClass = acc === null ? 'empty' : acc >= 70 ? 'good' : acc >= 50 ? 'ok' : 'bad';
+                const accText = acc === null ? 'Not started' : acc + '%';
+                const card = document.createElement('div'); card.className = 'topic-card';
+                card.innerHTML = `<div class="tc-header"><div class="tc-name">${TOPIC_ICONS[t] || ''} ${TOPIC_NAMES[t] || t}</div><div class="tc-acc ${accClass}">${accText}</div></div><div class="tc-bar"><div class="tc-fill" style="width:${answered / qs.length * 100}%;background:${accClass === 'good' ? 'var(--green)' : accClass === 'ok' ? 'var(--amber)' : accClass === 'bad' ? 'var(--red)' : 'var(--border)'}"></div></div><div class="tc-meta"><span>${qs.length} questions</span><span>${answered} answered</span></div>`;
+                card.onclick = () => practiceTopic(t);
+                grid.appendChild(card);
+            });
+
+            buildCharts();
+        }
+
+        function buildCharts() {
+            const attempted = Object.entries(statsData).filter(([, v]) => (v.answered || 0) > 0);
+            const labels = attempted.map(([t]) => TOPIC_NAMES[t] || t);
+            const accs = attempted.map(([, v]) => Math.round((v.correct || 0) / (v.answered || 1) * 100));
+            const colors = accs.map(a => a >= 70 ? 'rgba(22,163,74,0.7)' : a >= 50 ? 'rgba(217,119,6,0.7)' : 'rgba(220,38,38,0.7)');
+
+            if (barChart) barChart.destroy();
+            const bctx = document.getElementById('bar-chart').getContext('2d');
+            barChart = new Chart(bctx, { type: 'bar', data: { labels, datasets: [{ data: accs, backgroundColor: colors, borderRadius: 6, borderSkipped: false }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { max: 100, ticks: { callback: v => v + '%' }, grid: { color: '#f1f5f9' } }, x: { grid: { display: false }, ticks: { font: { size: 10 } } } } } });
+
+            const totalAns = Object.values(statsData).reduce((s, t) => (s + (t.answered || 0)), 0);
+            const totalCor = Object.values(statsData).reduce((s, t) => (s + (t.correct || 0)), 0);
+            const totalWrong = totalAns - totalCor;
+            const notDone = allData.length - totalAns;
+
+            if (pieChart) pieChart.destroy();
+            const pctx = document.getElementById('pie-chart').getContext('2d');
+            pieChart = new Chart(pctx, { type: 'doughnut', data: { labels: ['Correct', 'Wrong', 'Not Done'], datasets: [{ data: [totalCor, totalWrong, notDone], backgroundColor: ['rgba(22,163,74,0.8)', 'rgba(220,38,38,0.8)', 'rgba(100,116,139,0.3)'], borderWidth: 0, hoverOffset: 4 }] }, options: { responsive: true, maintainAspectRatio: false, cutout: '65%', plugins: { legend: { position: 'bottom', labels: { font: { size: 11 }, padding: 10 } } } } });
+        }
+
+        let practiceQs = [], practiceAnswers = {}, practiceTopicId = '';
+
+        function practiceTopic(topic) {
+            practiceTopicId = topic; practiceAnswers = {};
+            const pool = [...topicData[topic]].sort(() => Math.random() - 0.5).slice(0, 15);
+            practiceQs = pool;
+            if (!statsData[topic]) statsData[topic] = { answered: 0, correct: 0 };
+            document.getElementById('practice-title').textContent = `${TOPIC_ICONS[topic] || ''} ${TOPIC_NAMES[topic] || topic}`;
+            document.getElementById('tb-title').textContent = TOPIC_NAMES[topic] || topic;
+            buildPracticeQs();
+            showPractice();
+        }
+
+        function practiceWeak() {
+            const weak = Object.entries(statsData).filter(([, v]) => (v.answered || 0) > 0 && (v.correct / v.answered) < 0.5).map(([t]) => t);
+            const pool = allData.filter(q => weak.includes(q.topic) || weak.length === 0).sort(() => Math.random() - 0.5).slice(0, 20);
+            practiceQs = pool; practiceAnswers = {}; practiceTopicId = 'mixed';
+            document.getElementById('practice-title').textContent = '⚡ Weak Topics Practice';
+            document.getElementById('tb-title').textContent = 'Weak Topics';
+            buildPracticeQs();
+            showPractice();
+        }
+
+        function buildPracticeQs() {
+            const c = document.getElementById('pq-container');
+            c.innerHTML = '';
+            document.getElementById('pq-counter').textContent = `${practiceQs.length} questions`;
+            practiceQs.forEach((q, i) => {
+                const div = document.createElement('div'); div.className = 'pq-card';
+                const diagramSrc = resolveDiagramSrc(q);
+                const img = diagramSrc ? `<img class="pq-img" src="${diagramSrc}" onerror="this.style.display='none'">` : '';
+                const opts = q.options || {};
+                let optsHTML = '';
+                ['A', 'B', 'C', 'D'].forEach(l => {
+                    if (!opts[l]) return;
+                    optsHTML += `<div class="pq-opt" onclick="pqAnswer('${i}','${l}','${q.correct_option}',this,${i})" data-l="${l}"><div class="pq-ltr">${l}</div><span>${opts[l]}</span></div>`;
+                });
+                const expId = `exp-${i}`;
+                div.innerHTML = `<div class="pq-meta"><span>${TOPIC_NAMES[q.topic] || q.topic}</span><span>Q${i + 1}</span></div><div class="pq-text">${q.question_text || ''}</div>${img}<div class="pq-opts">${optsHTML}</div><div class="exp-box" id="${expId}"><p>${q.explanation || ''}</p></div>`;
+                c.appendChild(div);
+            });
+        }
+
+        function pqAnswer(idx, chosen, correct, el, qIdx) {
+            if (practiceAnswers[idx] !== undefined) return;
+            practiceAnswers[idx] = chosen;
+            const card = el.closest('.pq-card');
+            card.querySelectorAll('.pq-opt').forEach(b => {
+                b.style.pointerEvents = 'none';
+                if (b.getAttribute('data-l') === correct) b.classList.add('correct');
+                else if (b.getAttribute('data-l') === chosen && chosen !== correct) b.classList.add('wrong');
+            });
+            const t = practiceTopicId === 'mixed' ? practiceQs[qIdx].topic : practiceTopicId;
+            if (!statsData[t]) statsData[t] = { answered: 0, correct: 0 };
+            statsData[t].answered++;
+            if (chosen === correct) statsData[t].correct++;
+            saveStats();
+
+            if (practiceQs[qIdx].explanation) {
+                const eb = card.querySelector('.exp-box'); if (eb) eb.style.display = 'block';
+            }
+        }
+
+        function showDash() { document.getElementById('dash-screen').style.display = 'block'; document.getElementById('practice-screen').style.display = 'none'; document.getElementById('tb-title').textContent = 'Performance Dashboard'; renderDash(); }
+        function showPractice() { document.getElementById('dash-screen').style.display = 'none'; document.getElementById('practice-screen').style.display = 'block'; }
+        function resetStats() { if (confirm('Reset all stats?')) { localStorage.removeItem('analytics_stats'); loadStats(); renderDash(); } }
+
+        init();
+    </script>
+</body>
+
+</html>

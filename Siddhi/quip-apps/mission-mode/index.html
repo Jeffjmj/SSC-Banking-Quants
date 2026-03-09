@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mission Mode — SSC Math</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d0f1a; --bg2: #12162b; --bg3: #1a2040;
+    --green: #00ff88; --amber: #ffaa00; --red: #ff4466;
+    --blue: #4080ff; --text: #e2e8f0; --muted: #64748b;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; min-height: 100vh; overflow-x: hidden; }
+
+  /* ─── Screen Manager ─── */
+  .screen { display: none; min-height: 100vh; }
+  .screen.active { display: flex; flex-direction: column; }
+
+  /* ─── Header ─── */
+  header { background: var(--bg2); border-bottom: 1px solid #1e2a50; padding: 1rem 2rem; display: flex; align-items: center; justify-content: space-between; }
+  .logo { font-family: 'Orbitron', monospace; font-size: 1.1rem; color: var(--green); letter-spacing: 2px; }
+  .hud { display: flex; gap: 1.5rem; align-items: center; }
+  .hud-item { text-align: center; }
+  .hud-val { font-family: 'Orbitron', monospace; font-size: 1.1rem; color: var(--amber); }
+  .hud-label { font-size: 0.65rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
+  .flame { font-size: 1.5rem; }
+
+  /* ─── Mission Select ─── */
+  #mission-select { padding: 2rem; }
+  .page-title { font-family: 'Orbitron', monospace; font-size: 2rem; margin-bottom: 0.5rem; }
+  .page-title span { color: var(--green); }
+  .page-sub { color: var(--muted); margin-bottom: 2rem; }
+  .missions-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1.5rem; }
+
+  .mission-card {
+    background: var(--bg2); border: 1px solid #1e2a50; border-radius: 16px;
+    padding: 1.5rem; cursor: pointer; transition: all 0.3s; position: relative; overflow: hidden;
+  }
+  .mission-card:hover { transform: translateY(-4px); border-color: var(--green); box-shadow: 0 8px 32px rgba(0,255,136,0.15); }
+  .mission-card.locked { opacity: 0.4; cursor: not-allowed; }
+  .mission-card.locked:hover { transform: none; border-color: #1e2a50; box-shadow: none; }
+  .mission-card.completed { border-color: var(--green); }
+  .mission-card.completed::after { content: '✓ COMPLETE'; position: absolute; top: 1rem; right: 1rem; background: var(--green); color: #000; font-size: 0.65rem; font-weight: 700; padding: 0.2rem 0.5rem; border-radius: 20px; letter-spacing: 1px; }
+
+  .mission-icon { font-size: 2.5rem; margin-bottom: 0.75rem; }
+  .mission-name { font-family: 'Orbitron', monospace; font-size: 1rem; color: var(--amber); margin-bottom: 0.25rem; }
+  .mission-topic { font-size: 0.8rem; color: var(--muted); margin-bottom: 1rem; }
+  .mission-meta { display: flex; gap: 1rem; margin-bottom: 1rem; }
+  .meta-chip { background: var(--bg3); border-radius: 8px; padding: 0.25rem 0.6rem; font-size: 0.75rem; }
+  .prog-bar { background: #1e2a50; border-radius: 999px; height: 6px; overflow: hidden; }
+  .prog-fill { background: linear-gradient(90deg, var(--green), var(--amber)); height: 100%; transition: width 0.5s; border-radius: 999px; }
+  .prog-label { margin-top: 0.3rem; font-size: 0.7rem; color: var(--muted); }
+  .lock-icon { position: absolute; top: 1rem; right: 1rem; font-size: 1.2rem; }
+
+  /* ─── Quiz Screen ─── */
+  #quiz-screen { padding: 0; }
+  .quiz-header { background: var(--bg2); border-bottom: 1px solid #1e2a50; padding: 1rem 2rem; display: flex; align-items: center; gap: 1.5rem; }
+  .quiz-mission-name { font-family: 'Orbitron', monospace; font-size: 0.9rem; color: var(--amber); }
+  .quiz-progress { flex: 1; }
+  .qprog-bar { background: #1e2a50; border-radius: 999px; height: 8px; overflow: hidden; }
+  .qprog-fill { background: linear-gradient(90deg, var(--blue), var(--green)); height: 100%; transition: width 0.4s; border-radius: 999px; }
+  .qprog-text { font-size: 0.75rem; color: var(--muted); margin-top: 0.25rem; }
+  .xp-gain { font-family: 'Orbitron', monospace; color: var(--green); font-size: 0.9rem; }
+
+  .quiz-body { flex: 1; padding: 2rem; max-width: 860px; margin: 0 auto; width: 100%; }
+  .question-card { background: var(--bg2); border: 1px solid #1e2a50; border-radius: 20px; padding: 2rem; margin-bottom: 1.5rem; }
+  .q-num { font-size: 0.75rem; color: var(--muted); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 0.75rem; }
+  .q-text { font-size: 1.1rem; line-height: 1.7; color: var(--text); }
+  .q-diagram { max-width: 100%; border-radius: 8px; margin-top: 1rem; border: 1px solid #1e2a50; }
+
+  .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 1.5rem; }
+  .opt-btn {
+    background: var(--bg3); border: 2px solid #1e2a50; border-radius: 12px; padding: 1rem 1.25rem;
+    cursor: pointer; display: flex; align-items: center; gap: 0.75rem; transition: all 0.2s; text-align: left; color: var(--text); font-size: 0.95rem;
+  }
+  .opt-btn:hover:not(:disabled) { border-color: var(--blue); background: rgba(64,128,255,0.1); transform: translateX(4px); }
+  .opt-btn.correct { border-color: var(--green) !important; background: rgba(0,255,136,0.1) !important; }
+  .opt-btn.wrong { border-color: var(--red) !important; background: rgba(255,68,102,0.1) !important; }
+  .opt-btn:disabled { cursor: not-allowed; }
+  .opt-letter { width: 32px; height: 32px; border-radius: 8px; background: #1e2a50; display: flex; align-items: center; justify-content: center; font-family: 'Orbitron', monospace; font-size: 0.75rem; color: var(--amber); flex-shrink: 0; }
+  .opt-btn.correct .opt-letter { background: var(--green); color: #000; }
+  .opt-btn.wrong .opt-letter { background: var(--red); color: #fff; }
+
+  .explanation-box { background: rgba(0,255,136,0.05); border: 1px solid rgba(0,255,136,0.2); border-radius: 12px; padding: 1.25rem; margin-bottom: 1.5rem; display: none; }
+  .explanation-box h4 { color: var(--green); margin-bottom: 0.5rem; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px; }
+  .explanation-box p { font-size: 0.9rem; line-height: 1.6; color: #a0aec0; }
+
+  .quiz-actions { display: flex; justify-content: flex-end; }
+  .btn-next { background: linear-gradient(135deg, var(--green), #00cc66); color: #000; font-weight: 700; padding: 0.75rem 2rem; border: none; border-radius: 12px; cursor: pointer; font-family: 'Orbitron', monospace; font-size: 0.85rem; letter-spacing: 1px; transition: transform 0.2s; }
+  .btn-next:hover { transform: scale(1.04); }
+
+  /* ─── Debrief ─── */
+  #debrief { padding: 3rem 2rem; align-items: center; justify-content: center; flex-direction: column; text-align: center; }
+  .debrief-card { background: var(--bg2); border: 1px solid #1e2a50; border-radius: 24px; padding: 3rem; max-width: 500px; width: 100%; }
+  .debrief-stars { font-size: 3rem; margin-bottom: 1rem; }
+  .debrief-title { font-family: 'Orbitron', monospace; font-size: 1.5rem; margin-bottom: 0.5rem; }
+  .debrief-sub { color: var(--muted); margin-bottom: 2rem; }
+  .debrief-stats { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; margin-bottom: 2rem; }
+  .ds-item { background: var(--bg3); border-radius: 12px; padding: 1rem; }
+  .ds-val { font-family: 'Orbitron', monospace; font-size: 1.5rem; margin-bottom: 0.25rem; }
+  .ds-label { font-size: 0.7rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
+  .xp-banner { background: linear-gradient(135deg, rgba(255,170,0,0.1), rgba(0,255,136,0.1)); border: 1px solid var(--amber); border-radius: 12px; padding: 1rem; margin-bottom: 1.5rem; font-family: 'Orbitron', monospace; font-size: 1.1rem; color: var(--amber); }
+  .debrief-btns { display: flex; gap: 1rem; justify-content: center; }
+  .btn-primary { background: linear-gradient(135deg, var(--green), #00cc66); color: #000; font-weight: 700; padding: 0.75rem 1.75rem; border: none; border-radius: 12px; cursor: pointer; font-family: 'Orbitron', monospace; font-size: 0.8rem; letter-spacing: 1px; transition: transform 0.2s; }
+  .btn-primary:hover { transform: scale(1.04); }
+  .btn-secondary { background: transparent; color: var(--text); border: 1px solid #1e2a50; padding: 0.75rem 1.75rem; border-radius: 12px; cursor: pointer; font-family: 'Orbitron', monospace; font-size: 0.8rem; letter-spacing: 1px; transition: border-color 0.2s; }
+  .btn-secondary:hover { border-color: var(--blue); }
+
+  /* XP Float Animation */
+  .xp-float { position: fixed; pointer-events: none; font-family: 'Orbitron', monospace; font-size: 1.2rem; font-weight: 700; color: var(--green); animation: floatUp 1.2s ease forwards; z-index: 9999; }
+  @keyframes floatUp { 0% { opacity: 1; transform: translateY(0); } 100% { opacity: 0; transform: translateY(-80px); } }
+
+  /* Responsive */
+  @media (max-width: 600px) {
+    .options-grid { grid-template-columns: 1fr; }
+    .missions-grid { grid-template-columns: 1fr; }
+    .debrief-stats { grid-template-columns: 1fr 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ══════════ HEADER ══════════ -->
+<header>
+  <div class="logo">⚡ MISSION MODE</div>
+  <div class="hud">
+    <div class="hud-item"><div class="hud-val" id="hud-xp">0</div><div class="hud-label">Total XP</div></div>
+    <div class="hud-item"><div class="hud-val" id="hud-streak">0</div><div class="hud-label">Streak</div></div>
+    <div class="hud-item"><span class="flame" id="streak-flame">🔥</span></div>
+  </div>
+</header>
+
+<!-- ══════════ MISSION SELECT ══════════ -->
+<div class="screen active" id="mission-select">
+  <div style="padding:2rem;">
+    <h1 class="page-title">SELECT YOUR <span>MISSION</span></h1>
+    <p class="page-sub">Complete missions to earn XP and master Arithmetic for SSC CGL</p>
+    <div class="missions-grid" id="missions-grid"></div>
+  </div>
+</div>
+
+<!-- ══════════ QUIZ SCREEN ══════════ -->
+<div class="screen" id="quiz-screen">
+  <div class="quiz-header">
+    <div>
+      <div class="quiz-mission-name" id="quiz-mission-name"></div>
+    </div>
+    <div class="quiz-progress">
+      <div class="qprog-bar"><div class="qprog-fill" id="qprog-fill" style="width:0%"></div></div>
+      <div class="qprog-text" id="qprog-text">Question 1 of 10</div>
+    </div>
+    <div class="xp-gain" id="xp-gain-display">XP: 0</div>
+  </div>
+  <div class="quiz-body">
+    <div class="question-card">
+      <div class="q-num" id="q-num"></div>
+      <div class="q-text" id="q-text"></div>
+      <img class="q-diagram" id="q-diagram" style="display:none" alt="Diagram">
+    </div>
+    <div class="options-grid" id="options-grid"></div>
+    <div class="explanation-box" id="explanation-box">
+      <h4>📘 Explanation</h4>
+      <p id="explanation-text"></p>
+    </div>
+    <div class="quiz-actions">
+      <button class="btn-next" id="btn-next" style="display:none" onclick="nextQuestion()">NEXT QUESTION →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ DEBRIEF ══════════ -->
+<div class="screen" id="debrief">
+  <div class="debrief-card">
+    <div class="debrief-stars" id="debrief-stars">🏆</div>
+    <h2 class="debrief-title" id="debrief-title">MISSION COMPLETE</h2>
+    <p class="debrief-sub" id="debrief-sub">Well played, Commander!</p>
+    <div class="xp-banner" id="xp-banner">+0 XP EARNED</div>
+    <div class="debrief-stats">
+      <div class="ds-item"><div class="ds-val" id="db-score" style="color:var(--green)">0</div><div class="ds-label">Correct</div></div>
+      <div class="ds-item"><div class="ds-val" id="db-wrong" style="color:var(--red)">0</div><div class="ds-label">Wrong</div></div>
+      <div class="ds-item"><div class="ds-val" id="db-acc" style="color:var(--amber)">0%</div><div class="ds-label">Accuracy</div></div>
+    </div>
+    <div class="debrief-btns">
+      <button class="btn-primary" onclick="retryMission()">↺ RETRY</button>
+      <button class="btn-secondary" onclick="goToMissions()">← MISSIONS</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ─── Config ───
+const TOPICS = ['percentage','profit_loss','average','mixture_alligation'];
+const MISSIONS = [
+  { id:'percentage', icon:'💰', name:'PERCENTAGE', topic:'percentage', desc:'Percentages & Applications', color:'#00ff88' },
+  { id:'profit_loss', icon:'📈', name:'PROFIT & LOSS', topic:'profit_loss', desc:'Trade & Business Math', color:'#ffaa00' },
+  { id:'average', icon:'⚖️', name:'AVERAGES', topic:'average', desc:'Mean, Weighted Avg & More', color:'#4080ff' },
+  { id:'mixture_alligation', icon:'🧪', name:'MIXTURE & ALLIGATION', topic:'mixture_alligation', desc:'Ratios in Mixing', color:'#ff4466' },
+];
+const QS_PER_MISSION = 10;
+
+let allData = [];
+let state = { xp: 0, streak: 0, missionProgress: {} };
+let currentMission = null;
+let missionQuestions = [];
+let qIndex = 0;
+let sessionCorrect = 0;
+let sessionWrong = 0;
+let answered = false;
+
+function resolveDiagramSrc(question) {
+  const raw = question?.diagram_image_path;
+  if (!raw) return null;
+  const path = String(raw).replace(/\\/g, '/');
+  const marker = 'temp_extraction/extracted_diagrams/';
+  const markerIndex = path.toLowerCase().indexOf(marker);
+  if (markerIndex >= 0) {
+    return `../../${path.slice(markerIndex)}`;
+  }
+  if (path.startsWith('temp_extraction/')) {
+    return `../../${path}`;
+  }
+  return path;
+}
+
+// ─── Load State ───
+function loadState() {
+  const saved = localStorage.getItem('mm_state');
+  if (saved) state = JSON.parse(saved);
+  updateHUD();
+}
+function saveState() { localStorage.setItem('mm_state', JSON.stringify(state)); }
+
+// ─── Data ───
+async function loadData() {
+  try {
+    const res = await fetch('../../temp_extraction/ssc_math_database_images_clean.json');
+    allData = await res.json();
+    renderMissions();
+  } catch(e) { console.error('Failed to load data:', e); }
+}
+
+// ─── Missions ───
+function renderMissions() {
+  const grid = document.getElementById('missions-grid');
+  const keys = Object.keys(state.missionProgress);
+  grid.innerHTML = '';
+
+  MISSIONS.forEach((m, idx) => {
+    const prog = state.missionProgress[m.id] || { completed: 0 };
+    const isFirst = idx === 0;
+    const prevCompleted = idx === 0 || (state.missionProgress[MISSIONS[idx-1].id]?.completed || 0) >= 1;
+    const locked = !prevCompleted;
+    const topicQs = allData.filter(q => q.topic === m.topic);
+    const completedCount = prog.completed || 0;
+    const totalBatches = Math.floor(topicQs.length / QS_PER_MISSION);
+    const progPct = totalBatches > 0 ? Math.min(100, (completedCount / totalBatches) * 100) : 0;
+
+    const card = document.createElement('div');
+    card.className = `mission-card${locked?' locked':''}${completedCount >= totalBatches && totalBatches > 0?' completed':''}`;
+    card.innerHTML = `
+      ${locked ? '<div class="lock-icon">🔒</div>' : ''}
+      <div class="mission-icon">${m.icon}</div>
+      <div class="mission-name">${m.name}</div>
+      <div class="mission-topic">${m.desc}</div>
+      <div class="mission-meta">
+        <div class="meta-chip">📚 ${topicQs.length} Questions</div>
+        <div class="meta-chip">🎯 ${completedCount}/${totalBatches} Done</div>
+      </div>
+      <div class="prog-bar"><div class="prog-fill" style="width:${progPct}%"></div></div>
+      <div class="prog-label">${Math.round(progPct)}% Complete</div>
+    `;
+    if (!locked) card.onclick = () => startMission(m);
+    grid.appendChild(card);
+  });
+}
+
+function startMission(mission) {
+  currentMission = mission;
+  const topicQs = allData.filter(q => q.topic === mission.topic);
+  const shuffled = [...topicQs].sort(() => Math.random() - 0.5);
+  missionQuestions = shuffled.slice(0, QS_PER_MISSION);
+  qIndex = 0; sessionCorrect = 0; sessionWrong = 0;
+  document.getElementById('quiz-mission-name').textContent = mission.name;
+  document.getElementById('xp-gain-display').textContent = 'XP: 0';
+  showScreen('quiz-screen');
+  renderQuestion();
+}
+
+// ─── Quiz ───
+function renderQuestion() {
+  answered = false;
+  const q = missionQuestions[qIndex];
+  const totalQ = missionQuestions.length;
+  document.getElementById('q-num').textContent = `QUESTION ${qIndex + 1} of ${totalQ}`;
+  document.getElementById('q-text').textContent = q.question_text || 'Question text unavailable';
+  
+  const pct = ((qIndex) / totalQ) * 100;
+  document.getElementById('qprog-fill').style.width = pct + '%';
+  document.getElementById('qprog-text').textContent = `Question ${qIndex + 1} of ${totalQ}`;
+
+  // Diagram
+  const diagEl = document.getElementById('q-diagram');
+  const diagramSrc = resolveDiagramSrc(q);
+  if (diagramSrc) {
+    diagEl.src = diagramSrc;
+    diagEl.style.display = 'block';
+    diagEl.onerror = () => { diagEl.style.display = 'none'; };
+  } else { diagEl.style.display = 'none'; }
+
+  // Options
+  const grid = document.getElementById('options-grid');
+  grid.innerHTML = '';
+  const opts = q.options || {};
+  const letters = ['A','B','C','D'];
+  letters.forEach(l => {
+    if (!opts[l]) return;
+    const btn = document.createElement('button');
+    btn.className = 'opt-btn';
+    btn.innerHTML = `<div class="opt-letter">${l}</div><span>${opts[l]}</span>`;
+    btn.onclick = () => selectAnswer(l, q.correct_option, btn);
+    btn.setAttribute('data-letter', l);
+    grid.appendChild(btn);
+  });
+
+  document.getElementById('explanation-box').style.display = 'none';
+  document.getElementById('btn-next').style.display = 'none';
+}
+
+function selectAnswer(chosen, correct, clickedBtn) {
+  if (answered) return;
+  answered = true;
+  const btns = document.querySelectorAll('.opt-btn');
+  btns.forEach(b => {
+    b.disabled = true;
+    if (b.getAttribute('data-letter') === correct) b.classList.add('correct');
+  });
+
+  let xpEarned = 0;
+  if (chosen === correct) {
+    clickedBtn.classList.add('correct');
+    sessionCorrect++;
+    state.streak++;
+    xpEarned = 10 + (state.streak >= 3 ? 5 : 0);
+    state.xp += xpEarned;
+    floatXP(xpEarned, clickedBtn);
+  } else {
+    clickedBtn.classList.add('wrong');
+    sessionWrong++;
+    state.streak = 0;
+  }
+  document.getElementById('xp-gain-display').textContent = `XP: ${state.xp}`;
+  updateHUD();
+  saveState();
+
+  const q = missionQuestions[qIndex];
+  if (q.explanation) {
+    document.getElementById('explanation-text').textContent = q.explanation;
+    document.getElementById('explanation-box').style.display = 'block';
+  }
+  document.getElementById('btn-next').style.display = 'block';
+}
+
+function nextQuestion() {
+  qIndex++;
+  if (qIndex >= missionQuestions.length) {
+    endMission();
+  } else {
+    renderQuestion();
+  }
+}
+
+function endMission() {
+  const prog = state.missionProgress[currentMission.id] || { completed: 0 };
+  if (sessionCorrect >= missionQuestions.length * 0.6) {
+    prog.completed = (prog.completed || 0) + 1;
+  }
+  state.missionProgress[currentMission.id] = prog;
+  saveState();
+
+  const xpEarned = sessionCorrect * 10;
+  const acc = Math.round((sessionCorrect / missionQuestions.length) * 100);
+
+  document.getElementById('db-score').textContent = sessionCorrect;
+  document.getElementById('db-wrong').textContent = sessionWrong;
+  document.getElementById('db-acc').textContent = acc + '%';
+  document.getElementById('xp-banner').textContent = `+${xpEarned} XP EARNED`;
+
+  let stars = '💀', title = 'MISSION FAILED', sub = 'Try again, Commander!';
+  if (acc >= 90) { stars = '🏆🏆🏆'; title = 'PERFECT MISSION'; sub = 'Outstanding performance!'; }
+  else if (acc >= 70) { stars = '🏆🏆'; title = 'MISSION SUCCESS'; sub = 'Great work, Commander!'; }
+  else if (acc >= 50) { stars = '🏆'; title = 'MISSION COMPLETE'; sub = 'Keep pushing forward!'; }
+
+  document.getElementById('debrief-stars').textContent = stars;
+  document.getElementById('debrief-title').textContent = title;
+  document.getElementById('debrief-sub').textContent = sub;
+  showScreen('debrief');
+}
+
+function retryMission() { startMission(currentMission); }
+function goToMissions() { renderMissions(); showScreen('mission-select'); }
+
+// ─── Helpers ───
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+function updateHUD() {
+  document.getElementById('hud-xp').textContent = state.xp.toLocaleString();
+  document.getElementById('hud-streak').textContent = state.streak;
+  document.getElementById('streak-flame').textContent = state.streak >= 5 ? '🔥🔥' : state.streak >= 3 ? '🔥' : '❄️';
+}
+function floatXP(xp, nearEl) {
+  const el = document.createElement('div');
+  el.className = 'xp-float';
+  el.textContent = `+${xp} XP`;
+  const rect = nearEl.getBoundingClientRect();
+  el.style.left = rect.left + 'px';
+  el.style.top = rect.top + 'px';
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 1200);
+}
+
+// ─── Init ───
+loadState();
+loadData();
+</script>
+</body>
+</html>

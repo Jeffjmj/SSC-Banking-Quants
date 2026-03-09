@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Topic Mastery Map — SSC Math</title>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --bg: #020617;
+            --surface: #0a1128;
+            --border: #1e3a5f;
+            --blue: #3b82f6;
+            --cyan: #06b6d4;
+            --green: #10b981;
+            --amber: #f59e0b;
+            --red: #ef4444;
+            --purple: #8b5cf6;
+            --text: #e2e8f0;
+            --muted: #475569;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Space Grotesk', sans-serif;
+            overflow: hidden;
+            height: 100vh;
+        }
+
+        /* Map container */
+        #map-screen {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+        }
+
+        #starfield {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+        }
+
+        .star {
+            position: absolute;
+            border-radius: 50%;
+            background: #fff;
+            opacity: 0;
+            animation: twinkle 3s infinite;
+        }
+
+        @keyframes twinkle {
+
+            0%,
+            100% {
+                opacity: 0
+            }
+
+            50% {
+                opacity: 0.7
+            }
+        }
+
+        /* Header */
+        .map-header {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 10;
+            background: rgba(2, 6, 23, 0.8);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .map-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--cyan);
+            letter-spacing: 1px;
+        }
+
+        .map-legend {
+            display: flex;
+            gap: 1.5rem;
+            font-size: 0.75rem;
+        }
+
+        .leg {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            color: var(--muted);
+        }
+
+        .leg-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+
+        /* SVG Map */
+        #skill-map {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        line.connector {
+            stroke: var(--border);
+            stroke-width: 2;
+        }
+
+        line.connector.active {
+            stroke: var(--cyan);
+            stroke-width: 2;
+            animation: pulseLine 2s infinite;
+        }
+
+        @keyframes pulseLine {
+
+            0%,
+            100% {
+                stroke-opacity: 0.4
+            }
+
+            50% {
+                stroke-opacity: 1
+            }
+        }
+
+        .node-group {
+            cursor: pointer;
+        }
+
+        .node-circle {
+            transition: all 0.3s;
+            filter: drop-shadow(0 0 0px transparent);
+        }
+
+        .node-group:hover .node-circle {
+            filter: drop-shadow(0 0 12px var(--cyan));
+        }
+
+        .node-group.locked {
+            cursor: not-allowed;
+            opacity: 0.5;
+        }
+
+        .node-group.locked:hover .node-circle {
+            filter: none;
+        }
+
+        .node-group.completed .node-circle {
+            filter: drop-shadow(0 0 12px var(--green));
+        }
+
+        /* Modal */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(2, 6, 23, 0.8);
+            backdrop-filter: blur(8px);
+            z-index: 100;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-overlay.open {
+            display: flex;
+        }
+
+        .modal {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            width: min(700px, 95vw);
+            max-height: 90vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .modal-header {
+            padding: 1.5rem 2rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .mh-info h2 {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--cyan);
+        }
+
+        .mh-info p {
+            color: var(--muted);
+            font-size: 0.85rem;
+            margin-top: 0.2rem;
+        }
+
+        .close-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border);
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 1.1rem;
+            color: var(--text);
+        }
+
+        .modal-progress {
+            padding: 1rem 2rem;
+            background: rgba(0, 0, 0, 0.2);
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            font-size: 0.85rem;
+        }
+
+        .mp-bar {
+            flex: 1;
+            background: var(--border);
+            border-radius: 999px;
+            height: 6px;
+            overflow: hidden;
+        }
+
+        .mp-fill {
+            background: linear-gradient(90deg, var(--cyan), var(--blue));
+            height: 100%;
+            transition: width 0.3s;
+            border-radius: 999px;
+        }
+
+        .modal-body {
+            flex: 1;
+            overflow-y: auto;
+            padding: 2rem;
+        }
+
+        /* Question */
+        .mq-card {
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .mq-num {
+            font-size: 0.7rem;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 0.75rem;
+        }
+
+        .mq-text {
+            font-size: 0.95rem;
+            line-height: 1.6;
+            margin-bottom: 1.25rem;
+        }
+
+        .mq-img {
+            max-width: 100%;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+
+        .mq-opts {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.5rem;
+        }
+
+        .mq-opt {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 0.6rem 1rem;
+            cursor: pointer;
+            font-size: 0.88rem;
+            transition: all 0.15s;
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+        }
+
+        .mq-opt:hover:not(:disabled) {
+            border-color: var(--cyan);
+            background: rgba(6, 182, 212, 0.05);
+        }
+
+        .mq-opt.correct {
+            border-color: var(--green) !important;
+            background: rgba(16, 185, 129, 0.1) !important;
+        }
+
+        .mq-opt.wrong {
+            border-color: var(--red) !important;
+            background: rgba(239, 68, 68, 0.1) !important;
+        }
+
+        .mq-lt {
+            width: 24px;
+            height: 24px;
+            border-radius: 6px;
+            background: rgba(6, 182, 212, 0.15);
+            font-size: 0.7rem;
+            color: var(--cyan);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+
+        .mq-opt.correct .mq-lt {
+            background: var(--green);
+            color: #fff;
+        }
+
+        .mq-opt.wrong .mq-lt {
+            background: var(--red);
+            color: #fff;
+        }
+
+        /* Complete Banner */
+        .complete-banner {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(6, 182, 212, 0.15));
+            border: 2px solid var(--green);
+            border-radius: 20px;
+            padding: 2rem 3rem;
+            text-align: center;
+            z-index: 200;
+            animation: popIn 0.5s ease;
+            display: none;
+        }
+
+        @keyframes popIn {
+            0% {
+                opacity: 0;
+                transform: translate(-50%, -50%) scale(0.8)
+            }
+
+            100% {
+                opacity: 1;
+                transform: translate(-50%, -50%) scale(1)
+            }
+        }
+
+        .cb-icon {
+            font-size: 3rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .cb-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--green);
+            margin-bottom: 0.5rem;
+        }
+
+        .cb-close {
+            margin-top: 1rem;
+            background: var(--green);
+            color: #fff;
+            border: none;
+            padding: 0.6rem 1.5rem;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        @media(max-width:600px) {
+            .mq-opts {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- ══════════ SKILL MAP ══════════ -->
+    <div id="map-screen">
+        <div id="starfield"></div>
+        <div class="map-header">
+            <div class="map-title">🗺️ TOPIC MASTERY MAP</div>
+            <div class="map-legend">
+                <div class="leg">
+                    <div class="leg-dot" style="background:var(--amber)"></div>Locked
+                </div>
+                <div class="leg">
+                    <div class="leg-dot" style="background:var(--cyan)"></div>Available
+                </div>
+                <div class="leg">
+                    <div class="leg-dot" style="background:var(--green)"></div>Mastered
+                </div>
+            </div>
+        </div>
+        <svg id="skill-map"></svg>
+    </div>
+
+    <!-- ══════════ MODAL ══════════ -->
+    <div class="modal-overlay" id="modal">
+        <div class="modal">
+            <div class="modal-header">
+                <div class="mh-info">
+                    <h2 id="modal-title">Topic</h2>
+                    <p id="modal-sub"></p>
+                </div>
+                <button class="close-btn" onclick="closeModal()">✕</button>
+            </div>
+            <div class="modal-progress">
+                <span id="mp-text">0/10 answered</span>
+                <div class="mp-bar">
+                    <div class="mp-fill" id="mp-fill" style="width:0%"></div>
+                </div>
+                <span id="mp-correct" style="color:var(--green)">0✓</span>
+            </div>
+            <div class="modal-body" id="modal-body"></div>
+        </div>
+    </div>
+
+    <!-- ══════════ COMPLETE BANNER ══════════ -->
+    <div class="complete-banner" id="complete-banner">
+        <div class="cb-icon">🌟</div>
+        <div class="cb-title" id="cb-title">Node Mastered!</div>
+        <div id="cb-msg"></div>
+        <button class="cb-close" onclick="hideBanner()">Continue →</button>
+    </div>
+
+    <script>
+        // Skill tree nodes with positions (percentage-based)
+        const NODES = [
+            { id: 'basics', title: 'Math Foundations', desc: 'Core arithmetic concepts', icon: '📐', x: 50, y: 15, topic: null, unlocked: true, prereqs: [] },
+            { id: 'time_work', title: 'Time & Work', desc: 'Pipes, cisterns & efficiency', icon: '⚙️', x: 28, y: 42, topic: 'time_work', unlocked: false, prereqs: ['basics'] },
+            { id: 'time_speed', title: 'Time, Speed & Distance', desc: 'Speed, trains & boats', icon: '🚀', x: 72, y: 42, topic: 'time_speed_distance', unlocked: false, prereqs: ['basics'] },
+            { id: 'tw_advanced', title: 'Advanced Work', desc: 'Wages & combined work', icon: '🔧', x: 28, y: 70, topic: 'time_work', unlocked: false, prereqs: ['time_work'] },
+            { id: 'tsd_advanced', title: 'Advanced Motion', desc: 'Relative motion & streams', icon: '🌊', x: 72, y: 70, topic: 'time_speed_distance', unlocked: false, prereqs: ['time_speed'] },
+            { id: 'master', title: 'MASTER', desc: 'Complete all nodes', icon: '🏆', x: 50, y: 88, topic: null, unlocked: false, prereqs: ['tw_advanced', 'tsd_advanced'] },
+        ];
+        const CONNECTORS = [
+            ['basics', 'time_work'], ['basics', 'time_speed'], ['time_work', 'tw_advanced'], ['time_speed', 'tsd_advanced'], ['tw_advanced', 'master'], ['tsd_advanced', 'master']
+        ];
+
+        let allData = {}, nodeProgress = {}, nodeAnswers = {};
+
+        function resolveDiagramSrc(question) {
+            const raw = question?.diagram_image_path;
+            if (!raw) return null;
+            const path = String(raw).replace(/\\/g, '/');
+            const marker = 'temp_extraction/extracted_diagrams/';
+            const markerIndex = path.toLowerCase().indexOf(marker);
+            if (markerIndex >= 0) return `../../${path.slice(markerIndex)}`;
+            if (path.startsWith('temp_extraction/')) return `../../${path}`;
+            return path;
+        }
+
+        async function loadData() {
+            const r = await fetch('../../temp_extraction/ssc_math_database_images_clean.json');
+            const raw = await r.json();
+            allData['time_work'] = [...raw.filter(q => q.topic === 'time_work')].sort(() => Math.random() - 0.5).slice(0, 15);
+            allData['time_speed_distance'] = [...raw.filter(q => q.topic === 'time_speed_distance')].sort(() => Math.random() - 0.5).slice(0, 15);
+            nodeProgress = JSON.parse(localStorage.getItem('mm_prog') || '{}');
+            buildStarfield();
+            buildMap();
+        }
+
+        function buildStarfield() {
+            const sf = document.getElementById('starfield');
+            for (let i = 0; i < 80; i++) {
+                const s = document.createElement('div'); s.className = 'star';
+                s.style.cssText = `left:${Math.random() * 100}%;top:${Math.random() * 100}%;width:${Math.random() * 2 + 1}px;height:${Math.random() * 2 + 1}px;animation-delay:${Math.random() * 3}s;animation-duration:${2 + Math.random() * 3}s`;
+                sf.appendChild(s);
+            }
+        }
+
+        function buildMap() {
+            const svg = document.getElementById('skill-map');
+            const W = window.innerWidth, H = window.innerHeight;
+            svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+            svg.innerHTML = '';
+
+            // Compute node states
+            NODES.forEach(n => {
+                const prereqsDone = n.prereqs.every(pid => {
+                    const pn = NODES.find(x => x.id === pid);
+                    return !pn.topic || (nodeProgress[pid]?.correct || 0) >= 8;
+                });
+                if (prereqsDone && n.id !== 'basics') n.unlocked = true;
+                if (n.id === 'basics') n.unlocked = true;
+            });
+
+            // Draw connectors
+            CONNECTORS.forEach(([a, b]) => {
+                const na = NODES.find(n => n.id === a), nb = NODES.find(n => n.id === b);
+                const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                line.setAttribute('x1', na.x / 100 * W); line.setAttribute('y1', na.y / 100 * H);
+                line.setAttribute('x2', nb.x / 100 * W); line.setAttribute('y2', nb.y / 100 * H);
+                const aActive = na.unlocked && nb.unlocked;
+                line.setAttribute('class', `connector${aActive ? ' active' : ''}`);
+                svg.appendChild(line);
+            });
+
+            // Draw nodes
+            NODES.forEach(node => {
+                const cx = node.x / 100 * W, cy = node.y / 100 * H;
+                const prog = nodeProgress[node.id] || { correct: 0, total: 0 };
+                const mastered = node.topic && prog.correct >= 8;
+                const color = !node.unlocked ? '#92400e' : mastered ? '#10b981' : '#0e7490';
+                const strokeColor = !node.unlocked ? '#f59e0b' : mastered ? '#10b981' : '#06b6d4';
+                const r = node.id === 'master' ? 50 : node.id === 'basics' ? 44 : 40;
+
+                const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+                g.setAttribute('class', `node-group${!node.unlocked ? ' locked' : ''}${mastered ? ' completed' : ''}`);
+                if (node.unlocked) g.onclick = () => openNode(node);
+
+                // Glow circle
+                if (node.unlocked) {
+                    const glow = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+                    glow.setAttribute('cx', cx); glow.setAttribute('cy', cy); glow.setAttribute('r', r + 8);
+                    glow.setAttribute('fill', `${strokeColor}22`);
+                    g.appendChild(glow);
+                }
+
+                // Main circle
+                const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+                circle.setAttribute('cx', cx); circle.setAttribute('cy', cy); circle.setAttribute('r', r);
+                circle.setAttribute('fill', color); circle.setAttribute('stroke', strokeColor); circle.setAttribute('stroke-width', 2);
+                circle.setAttribute('class', 'node-circle');
+                g.appendChild(circle);
+
+                // Progress arc
+                if (node.topic && prog.total > 0) {
+                    const pct = Math.min(1, prog.correct / 10); const arc = pct * 2 * Math.PI * r;
+                    const pathEl = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+                    pathEl.setAttribute('cx', cx); pathEl.setAttribute('cy', cy); pathEl.setAttribute('r', r);
+                    pathEl.setAttribute('fill', 'none'); pathEl.setAttribute('stroke', '#10b981'); pathEl.setAttribute('stroke-width', 3);
+                    pathEl.setAttribute('stroke-dasharray', `${arc} 999`); pathEl.setAttribute('stroke-dashoffset', '0');
+                    pathEl.setAttribute('transform', `rotate(-90 ${cx} ${cy})`);
+                    g.appendChild(pathEl);
+                }
+
+                // Icon text
+                const icon = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                icon.setAttribute('x', cx); icon.setAttribute('y', cy - 6);
+                icon.setAttribute('text-anchor', 'middle'); icon.setAttribute('dominant-baseline', 'middle');
+                icon.setAttribute('font-size', '22'); icon.textContent = node.icon;
+                g.appendChild(icon);
+
+                // Title text
+                const title = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                title.setAttribute('x', cx); title.setAttribute('y', cy + r + 16);
+                title.setAttribute('text-anchor', 'middle'); title.setAttribute('fill', '#e2e8f0');
+                title.setAttribute('font-size', '11'); title.setAttribute('font-family', 'Space Grotesk, sans-serif'); title.setAttribute('font-weight', '600');
+                title.textContent = node.title;
+                g.appendChild(title);
+
+                if (node.topic) {
+                    const sub = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                    sub.setAttribute('x', cx); sub.setAttribute('y', cy + r + 30);
+                    sub.setAttribute('text-anchor', 'middle'); sub.setAttribute('fill', '#475569');
+                    sub.setAttribute('font-size', '10'); sub.setAttribute('font-family', 'Space Grotesk, sans-serif');
+                    sub.textContent = `${prog.correct || 0}/10 mastered`;
+                    g.appendChild(sub);
+                }
+
+                svg.appendChild(g);
+            });
+        }
+
+        function openNode(node) {
+            if (!node.topic && node.id !== 'master') {
+                showBanner('🌟 Starting Point', 'Complete child nodes to progress!'); return;
+            }
+            if (node.id === 'master') { showBanner('🏆 MASTER NODE', 'Complete all branches to unlock the Master node!'); return; }
+
+            document.getElementById('modal-title').textContent = node.title;
+            document.getElementById('modal-sub').textContent = node.desc;
+            nodeAnswers[node.id] = nodeAnswers[node.id] || {};
+            const qs = allData[node.topic] || [];
+            const body = document.getElementById('modal-body');
+            body.innerHTML = '';
+            qs.forEach((q, i) => {
+                const key = `${node.id}_${i}`;
+                const answered = nodeAnswers[node.id][i];
+                const div = document.createElement('div'); div.className = 'mq-card';
+                const diagramSrc = resolveDiagramSrc(q);
+                const img = diagramSrc ? `<img class="mq-img" src="${diagramSrc}" onerror="this.style.display='none'">` : '';
+                const opts = q.options || {};
+                let optsHTML = '';
+                ['A', 'B', 'C', 'D'].forEach(l => {
+                    if (!opts[l]) return;
+                    const isCorrect = l === q.correct_option, isChosen = answered === l;
+                    const cls = answered ? (isCorrect ? 'correct' : (isChosen ? 'wrong' : '')) : '';
+                    optsHTML += `<button class="mq-opt ${cls}" onclick="ansQ('${node.id}',${i},'${l}','${q.correct_option}',this)" ${answered ? 'disabled' : ''} data-l="${l}"><div class="mq-lt">${l}</div><span>${opts[l]}</span></button>`;
+                });
+                div.innerHTML = `<div class="mq-num">QUESTION ${i + 1}</div><div class="mq-text">${q.question_text || ''}</div>${img}<div class="mq-opts">${optsHTML}</div>`;
+                body.appendChild(div);
+            });
+            updateModalProg(node);
+            document.getElementById('modal').classList.add('open');
+        }
+
+        function ansQ(nodeId, qIdx, chosen, correctOpt, btn) {
+            if (nodeAnswers[nodeId][qIdx]) return;
+            nodeAnswers[nodeId][qIdx] = chosen;
+            const container = btn.closest('.mq-opts');
+            container.querySelectorAll('.mq-opt').forEach(b => {
+                b.disabled = true;
+                if (b.getAttribute('data-l') === correctOpt) b.classList.add('correct');
+                else if (b.getAttribute('data-l') === chosen && chosen !== correctOpt) b.classList.add('wrong');
+            });
+
+            const node = NODES.find(n => n.id === nodeId);
+            const total = Object.keys(nodeAnswers[nodeId]).length;
+            nodeProgress[nodeId] = {
+                correct: Object.entries(nodeAnswers[nodeId]).filter(
+                    ([k, v]) => v === allData[node.topic][Number(k)]?.correct_option
+                ).length,
+                total,
+            };
+            localStorage.setItem('mm_prog', JSON.stringify(nodeProgress));
+            updateModalProg(node);
+            buildMap();
+
+            if (nodeProgress[nodeId].correct >= 8) {
+                setTimeout(() => { closeModal(); showBanner('⭐ NODE MASTERED!', `+50 XP — ${node.title} unlocked!`); }, 400);
+            }
+        }
+
+        function updateModalProg(node) {
+            const ans = nodeAnswers[node.id] || {};
+            const total = (allData[node.topic] || []).length;
+            const answered = Object.keys(ans).length;
+            const correct = Object.entries(ans).filter(([k, v]) => v === allData[node.topic][k]?.correct_option).length;
+            document.getElementById('mp-text').textContent = `${answered}/${total} answered`;
+            document.getElementById('mp-fill').style.width = (answered / total * 100) + '%';
+            document.getElementById('mp-correct').textContent = `${correct}✓`;
+        }
+
+        function showBanner(title, msg) {
+            document.getElementById('cb-title').textContent = title;
+            document.getElementById('cb-msg').textContent = msg;
+            document.getElementById('complete-banner').style.display = 'block';
+        }
+        function hideBanner() { document.getElementById('complete-banner').style.display = 'none'; }
+        function closeModal() { document.getElementById('modal').classList.remove('open'); buildMap(); }
+
+        window.addEventListener('resize', buildMap);
+        loadData();
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,878 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Exam Simulator — SSC Math</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #f0f4f8;
+            --white: #ffffff;
+            --text: #1e293b;
+            --muted: #64748b;
+            --border: #e2e8f0;
+            --blue: #1d4ed8;
+            --green: #16a34a;
+            --red: #dc2626;
+            --amber: #d97706;
+            --header: #1e293b;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+        }
+
+        .screen {
+            display: none;
+            min-height: 100vh;
+        }
+
+        .screen.active {
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* ─── Home ─── */
+        #home {
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #1e3a5f 0%, #1e293b 100%);
+        }
+
+        .home-card {
+            background: var(--white);
+            border-radius: 24px;
+            padding: 3rem;
+            max-width: 560px;
+            width: 90%;
+            text-align: center;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        .home-logo {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .home-title {
+            font-size: 1.75rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            color: var(--text);
+        }
+
+        .home-sub {
+            color: var(--muted);
+            margin-bottom: 2rem;
+            line-height: 1.6;
+        }
+
+        .config-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            text-align: left;
+        }
+
+        .config-item label {
+            display: block;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--muted);
+            margin-bottom: 0.4rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .config-item select,
+        .config-item input {
+            width: 100%;
+            padding: 0.6rem 0.8rem;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 0.9rem;
+            color: var(--text);
+            background: var(--bg);
+        }
+
+        .btn-start {
+            width: 100%;
+            background: var(--blue);
+            color: #fff;
+            font-size: 1rem;
+            font-weight: 600;
+            padding: 1rem;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .btn-start:hover {
+            background: #1e40af;
+        }
+
+        .stats-row {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat {
+            text-align: center;
+        }
+
+        .stat-val {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--blue);
+        }
+
+        .stat-label {
+            font-size: 0.7rem;
+            color: var(--muted);
+            text-transform: uppercase;
+        }
+
+        /* ─── Exam Header ─── */
+        #exam {
+            flex-direction: column;
+        }
+
+        .exam-header {
+            background: var(--header);
+            color: #fff;
+            padding: 0.75rem 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-shrink: 0;
+        }
+
+        .eh-title {
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .eh-info {
+            display: flex;
+            gap: 1.5rem;
+            align-items: center;
+            font-size: 0.85rem;
+        }
+
+        .timer {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #fbbf24;
+            letter-spacing: 2px;
+        }
+
+        .timer.warn {
+            color: #ef4444;
+            animation: blink 1s infinite;
+        }
+
+        @keyframes blink {
+            50% {
+                opacity: 0.4;
+            }
+        }
+
+        .submit-btn {
+            background: #2563eb;
+            color: #fff;
+            border: none;
+            padding: 0.5rem 1.25rem;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        /* ─── Exam Body ─── */
+        .exam-body {
+            flex: 1;
+            display: flex;
+            overflow: hidden;
+        }
+
+        .exam-main {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1.5rem;
+        }
+
+        .exam-sidebar {
+            width: 300px;
+            background: var(--white);
+            border-left: 1px solid var(--border);
+            overflow-y: auto;
+            flex-shrink: 0;
+        }
+
+        /* Question area */
+        .question-area {
+            background: var(--white);
+            border-radius: 16px;
+            padding: 2rem;
+            margin-bottom: 1rem;
+            border: 1px solid var(--border);
+        }
+
+        .q-meta {
+            color: var(--muted);
+            font-size: 0.8rem;
+            margin-bottom: 1rem;
+        }
+
+        .q-text {
+            font-size: 1rem;
+            line-height: 1.7;
+            margin-bottom: 1.5rem;
+        }
+
+        .q-img {
+            max-width: 100%;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+            border: 1px solid var(--border);
+        }
+
+        .option-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .option-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+
+        .option-item:hover {
+            border-color: var(--blue);
+            background: #eff6ff;
+        }
+
+        .option-item.selected {
+            border-color: var(--blue);
+            background: #dbeafe;
+        }
+
+        .option-item.correct {
+            border-color: var(--green) !important;
+            background: #dcfce7 !important;
+        }
+
+        .option-item.wrong {
+            border-color: var(--red) !important;
+            background: #fee2e2 !important;
+        }
+
+        .opt-radio {
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            border: 2px solid var(--muted);
+            flex-shrink: 0;
+        }
+
+        .option-item.selected .opt-radio {
+            border-color: var(--blue);
+            background: var(--blue);
+        }
+
+        .option-item.correct .opt-radio {
+            border-color: var(--green);
+            background: var(--green);
+        }
+
+        .option-item.wrong .opt-radio {
+            border-color: var(--red);
+            background: var(--red);
+        }
+
+        .nav-bar {
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .nav-btn {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            padding: 0.5rem 1.25rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: 500;
+            transition: all 0.15s;
+        }
+
+        .nav-btn:hover {
+            background: #e2e8f0;
+        }
+
+        .nav-btn.primary {
+            background: var(--blue);
+            color: #fff;
+            border-color: var(--blue);
+        }
+
+        .mark-btn {
+            background: #fff3e0;
+            border: 1px solid var(--amber);
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            color: var(--amber);
+            font-weight: 500;
+        }
+
+        .mark-btn.marked {
+            background: #fde68a;
+        }
+
+        /* ─── Sidebar ─── */
+        .sidebar-header {
+            padding: 1rem;
+            border-bottom: 1px solid var(--border);
+            font-weight: 600;
+            font-size: 0.85rem;
+        }
+
+        .section-info {
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid var(--border);
+            font-size: 0.8rem;
+            color: var(--muted);
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .palette-grid {
+            padding: 1rem;
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 0.4rem;
+        }
+
+        .pq-btn {
+            aspect-ratio: 1;
+            border: none;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            cursor: pointer;
+            background: #e2e8f0;
+            color: var(--muted);
+            transition: all 0.15s;
+        }
+
+        .pq-btn.current {
+            outline: 2px solid var(--blue);
+            outline-offset: 2px;
+        }
+
+        .pq-btn.answered {
+            background: var(--green);
+            color: #fff;
+        }
+
+        .pq-btn.marked {
+            background: var(--amber);
+            color: #fff;
+        }
+
+        .pq-btn.wrong-saved {
+            background: var(--red);
+            color: #fff;
+        }
+
+        .palette-legend {
+            padding: 0 1rem 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.4rem;
+            font-size: 0.75rem;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .legend-dot {
+            width: 14px;
+            height: 14px;
+            border-radius: 3px;
+            flex-shrink: 0;
+        }
+
+        /* ─── Review/Result ─── */
+        #result {
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            background: var(--bg);
+        }
+
+        .result-card {
+            background: var(--white);
+            border-radius: 24px;
+            padding: 2.5rem;
+            max-width: 600px;
+            width: 100%;
+            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+        }
+
+        .result-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .result-icon {
+            font-size: 3rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .result-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        .score-ring {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 2rem;
+        }
+
+        .score-circle {
+            width: 160px;
+            height: 160px;
+            border-radius: 50%;
+            border: 8px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .score-pct {
+            font-size: 2.5rem;
+            font-weight: 700;
+        }
+
+        .score-label {
+            font-size: 0.75rem;
+            color: var(--muted);
+            text-transform: uppercase;
+        }
+
+        .result-stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .rs-item {
+            text-align: center;
+            padding: 1rem;
+            border-radius: 12px;
+            background: var(--bg);
+        }
+
+        .rs-val {
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        .rs-label {
+            font-size: 0.7rem;
+            color: var(--muted);
+        }
+
+        .result-btns {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .btn-reattempt {
+            flex: 1;
+            background: var(--blue);
+            color: #fff;
+            padding: 0.75rem;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .btn-home {
+            flex: 1;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            padding: 0.75rem;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- ══════════ HOME ══════════ -->
+    <div class="screen active" id="home">
+        <div class="home-card">
+            <div class="home-logo">📋</div>
+            <h1 class="home-title">SSC Exam Simulator</h1>
+            <p class="home-sub">Geometry · Mensuration · Trigonometry<br>Practice in a real exam environment</p>
+            <div class="stats-row">
+                <div class="stat">
+                    <div class="stat-val" id="stat-total">0</div>
+                    <div class="stat-label">Questions</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-val" id="stat-attempts">0</div>
+                    <div class="stat-label">Attempts</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-val" id="stat-best">—</div>
+                    <div class="stat-label">Best Score</div>
+                </div>
+            </div>
+            <div class="config-grid">
+                <div class="config-item">
+                    <label>Number of Questions</label>
+                    <select id="conf-count">
+                        <option value="25">25</option>
+                        <option value="50" selected>50</option>
+                        <option value="75">75</option>
+                        <option value="100">100</option>
+                    </select>
+                </div>
+                <div class="config-item">
+                    <label>Duration (mins)</label>
+                    <select id="conf-time">
+                        <option value="30">30 min</option>
+                        <option value="60" selected>60 min</option>
+                        <option value="90">90 min</option>
+                    </select>
+                </div>
+                <div class="config-item">
+                    <label>Topic</label>
+                    <select id="conf-topic">
+                        <option value="all">All Topics</option>
+                        <option value="geometry">Geometry</option>
+                        <option value="mensuration">Mensuration</option>
+                        <option value="trigonometry">Trigonometry</option>
+                    </select>
+                </div>
+                <div class="config-item">
+                    <label>Mode</label>
+                    <select id="conf-mode">
+                        <option value="timed">Timed Exam</option>
+                        <option value="practice">Practice Mode</option>
+                    </select>
+                </div>
+            </div>
+            <button class="btn-start" id="start-btn">START EXAM →</button>
+        </div>
+    </div>
+
+    <!-- ══════════ EXAM ══════════ -->
+    <div class="screen" id="exam">
+        <div class="exam-header">
+            <span class="eh-title">SSC Exam Simulator — <span
+                    id="sect-name">Geometry/Mensuration/Trigonometry</span></span>
+            <div class="eh-info">
+                <span>Q <span id="eh-curr">1</span>/<span id="eh-total">50</span></span>
+                <span class="timer" id="timer">60:00</span>
+                <button class="submit-btn" onclick="confirmSubmit()">Submit</button>
+            </div>
+        </div>
+        <div class="exam-body">
+            <div class="exam-main">
+                <div class="question-area">
+                    <div class="q-meta" id="q-meta">Section: Geometry | Question 1</div>
+                    <div class="q-text" id="q-text"></div>
+                    <img id="q-img" class="q-img" style="display:none" alt="Diagram">
+                    <div class="option-list" id="option-list"></div>
+                </div>
+                <div class="nav-bar">
+                    <button class="nav-btn" id="prev-btn" onclick="navigate(-1)">← Previous</button>
+                    <button class="mark-btn" id="mark-btn" onclick="toggleMark()">🔖 Mark for Review</button>
+                    <button class="nav-btn primary" id="next-btn" onclick="navigate(1)">Next →</button>
+                </div>
+            </div>
+            <div class="exam-sidebar">
+                <div class="sidebar-header">Question Palette</div>
+                <div class="section-info"><span id="si-attempted">Attempted: 0</span><span id="si-remaining">Remaining:
+                        50</span></div>
+                <div class="palette-grid" id="palette-grid"></div>
+                <div class="palette-legend">
+                    <div class="legend-item">
+                        <div class="legend-dot" style="background:#16a34a"></div>Answered
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-dot" style="background:#d97706"></div>Marked for Review
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-dot" style="background:#e2e8f0"></div>Not Attempted
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ══════════ RESULT ══════════ -->
+    <div class="screen" id="result">
+        <div class="result-card">
+            <div class="result-header">
+                <div class="result-icon" id="result-icon">🎯</div>
+                <div class="result-title" id="result-title">Test Complete</div>
+            </div>
+            <div class="score-ring">
+                <div class="score-circle" id="score-circle">
+                    <div class="score-pct" id="score-pct">0%</div>
+                    <div class="score-label">Score</div>
+                </div>
+            </div>
+            <div class="result-stats">
+                <div class="rs-item">
+                    <div class="rs-val" id="rs-correct" style="color:var(--green)">0</div>
+                    <div class="rs-label">Correct</div>
+                </div>
+                <div class="rs-item">
+                    <div class="rs-val" id="rs-wrong" style="color:var(--red)">0</div>
+                    <div class="rs-label">Wrong</div>
+                </div>
+                <div class="rs-item">
+                    <div class="rs-val" id="rs-skip" style="color:var(--amber)">0</div>
+                    <div class="rs-label">Skipped</div>
+                </div>
+            </div>
+            <div class="result-btns">
+                <button class="btn-reattempt" onclick="reattempt()">Reattempt</button>
+                <button class="btn-home" onclick="goHome()">Home</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const TOPICS = ['geometry', 'mensuration', 'trigonometry'];
+        let allData = [], questions = [], answers = {}, marked = new Set();
+        let currentQ = 0, timerInterval = null, timeLeft = 3600, practiceMode = false;
+        let examStats = JSON.parse(localStorage.getItem('es_stats') || '{"attempts":0,"bestScore":0}');
+
+        function resolveDiagramSrc(question) {
+            const raw = question?.diagram_image_path;
+            if (!raw) return null;
+            const path = String(raw).replace(/\\/g, '/');
+            const marker = 'temp_extraction/extracted_diagrams/';
+            const markerIndex = path.toLowerCase().indexOf(marker);
+            if (markerIndex >= 0) return `../../${path.slice(markerIndex)}`;
+            if (path.startsWith('temp_extraction/')) return `../../${path}`;
+            return path;
+        }
+
+        async function loadData() {
+            const r = await fetch('../../temp_extraction/ssc_math_database_images_clean.json');
+            allData = (await r.json()).filter(q => TOPICS.includes(q.topic));
+            document.getElementById('stat-total').textContent = allData.length;
+            document.getElementById('stat-attempts').textContent = examStats.attempts;
+            document.getElementById('stat-best').textContent = examStats.bestScore ? examStats.bestScore + '%' : '—';
+        }
+
+        document.getElementById('start-btn').onclick = () => {
+            const count = parseInt(document.getElementById('conf-count').value);
+            const mins = parseInt(document.getElementById('conf-time').value);
+            const topic = document.getElementById('conf-topic').value;
+            practiceMode = document.getElementById('conf-mode').value === 'practice';
+            const pool = topic === 'all' ? allData : allData.filter(q => q.topic === topic);
+            questions = [...pool].sort(() => Math.random() - 0.5).slice(0, Math.min(count, pool.length));
+            answers = {}; marked = new Set(); currentQ = 0;
+            timeLeft = mins * 60;
+            startExam();
+        };
+
+        function startExam() {
+            showScreen('exam');
+            document.getElementById('eh-total').textContent = questions.length;
+            buildPalette();
+            renderQ(0);
+            if (!practiceMode) startTimer();
+        }
+
+        function startTimer() {
+            clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                const m = Math.floor(timeLeft / 60), s = timeLeft % 60;
+                const el = document.getElementById('timer');
+                el.textContent = `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+                el.className = 'timer' + (timeLeft <= 300 ? ' warn' : '');
+                if (timeLeft <= 0) { clearInterval(timerInterval); showResult(); }
+            }, 1000);
+        }
+
+        function renderQ(idx) {
+            currentQ = idx;
+            const q = questions[idx];
+            document.getElementById('eh-curr').textContent = idx + 1;
+            document.getElementById('q-meta').textContent = `Section: ${q.topic.replace('_', ' ')} | Question ${idx + 1}`;
+            document.getElementById('q-text').textContent = q.question_text || '';
+
+            const img = document.getElementById('q-img');
+            const diagramSrc = resolveDiagramSrc(q);
+            if (diagramSrc) {
+                img.src = diagramSrc;
+                img.style.display = 'block';
+                img.onerror = () => img.style.display = 'none';
+            } else img.style.display = 'none';
+
+            const opts = q.options || {};
+            const list = document.getElementById('option-list');
+            list.innerHTML = '';
+            ['A', 'B', 'C', 'D'].forEach(l => {
+                if (!opts[l]) return;
+                const div = document.createElement('div');
+                div.className = 'option-item' + (answers[idx] === l ? ' selected' : '');
+                if (practiceMode && answers[idx]) {
+                    if (l === q.correct_option) div.classList.add('correct');
+                    else if (answers[idx] === l) div.classList.add('wrong');
+                }
+                div.innerHTML = `<div class="opt-radio"></div><span><strong>${l}.</strong> ${opts[l]}</span>`;
+                div.onclick = () => selectAnswer(l, div);
+                div.setAttribute('data-l', l);
+                list.appendChild(div);
+            });
+
+            const mb = document.getElementById('mark-btn');
+            mb.className = 'mark-btn' + (marked.has(idx) ? ' marked' : '');
+            document.getElementById('prev-btn').disabled = idx === 0;
+            document.getElementById('next-btn').textContent = idx === questions.length - 1 ? 'Submit →' : 'Next →';
+            document.getElementById('next-btn').onclick = idx === questions.length - 1 ? confirmSubmit : () => navigate(1);
+            updatePalette();
+            updateSidebarInfo();
+        }
+
+        function selectAnswer(letter, div) {
+            if (!practiceMode && answers[currentQ] !== undefined) return;
+            answers[currentQ] = letter;
+            document.querySelectorAll('.option-item').forEach(d => {
+                d.classList.remove('selected', 'correct', 'wrong');
+                if (practiceMode) {
+                    const l = d.getAttribute('data-l');
+                    const q = questions[currentQ];
+                    if (l === q.correct_option) d.classList.add('correct');
+                    else if (l === letter) d.classList.add('wrong');
+                }
+            });
+            div.classList.add('selected');
+            updatePalette(); updateSidebarInfo();
+        }
+
+        function navigate(dir) {
+            const n = currentQ + dir;
+            if (n >= 0 && n < questions.length) renderQ(n);
+        }
+
+        function toggleMark() {
+            if (marked.has(currentQ)) marked.delete(currentQ); else marked.add(currentQ);
+            renderQ(currentQ);
+        }
+
+        function buildPalette() {
+            const grid = document.getElementById('palette-grid');
+            grid.innerHTML = '';
+            questions.forEach((_, i) => {
+                const b = document.createElement('button');
+                b.className = 'pq-btn'; b.textContent = i + 1;
+                b.onclick = () => renderQ(i);
+                b.id = `pb-${i}`;
+                grid.appendChild(b);
+            });
+        }
+
+        function updatePalette() {
+            questions.forEach((_, i) => {
+                const b = document.getElementById(`pb-${i}`);
+                if (!b) return;
+                b.className = 'pq-btn' + (i === currentQ ? ' current' : '') + (marked.has(i) ? ' marked' : '') + (answers[i] !== undefined ? ' answered' : '');
+            });
+        }
+
+        function updateSidebarInfo() {
+            const att = Object.keys(answers).length;
+            document.getElementById('si-attempted').textContent = `Attempted: ${att}`;
+            document.getElementById('si-remaining').textContent = `Remaining: ${questions.length - att}`;
+        }
+
+        function confirmSubmit() {
+            if (confirm(`Submit? You've answered ${Object.keys(answers).length}/${questions.length} questions.`)) {
+                clearInterval(timerInterval); showResult();
+            }
+        }
+
+        function showResult() {
+            let correct = 0, wrong = 0, skip = 0;
+            questions.forEach((q, i) => {
+                const a = answers[i];
+                if (!a) skip++; else if (a === q.correct_option) correct++; else wrong++;
+            });
+            const acc = Math.round((correct / questions.length) * 100);
+            examStats.attempts++; if (acc > examStats.bestScore) examStats.bestScore = acc;
+            localStorage.setItem('es_stats', JSON.stringify(examStats));
+
+            document.getElementById('score-pct').textContent = acc + '%';
+            const c = document.getElementById('score-circle');
+            c.style.borderColor = acc >= 70 ? 'var(--green)' : acc >= 50 ? 'var(--amber)' : 'var(--red)';
+            document.getElementById('rs-correct').textContent = correct;
+            document.getElementById('rs-wrong').textContent = wrong;
+            document.getElementById('rs-skip').textContent = skip;
+            const icons = { 90: '🏆', 70: '🎯', 50: '👍', 0: '📚' };
+            const icon = Object.keys(icons).sort((a, b) => b - a).find(k => acc >= k);
+            document.getElementById('result-icon').textContent = icons[icon];
+            document.getElementById('result-title').textContent = acc >= 70 ? 'Excellent Work!' : acc >= 50 ? 'Good Effort!' : 'Keep Practicing!';
+            showScreen('result');
+        }
+
+        function reattempt() { clearInterval(timerInterval); goHome(); }
+        function goHome() { clearInterval(timerInterval); showScreen('home'); document.getElementById('stat-attempts').textContent = examStats.attempts; document.getElementById('stat-best').textContent = examStats.bestScore + '%'; }
+        function showScreen(id) { document.querySelectorAll('.screen').forEach(s => s.classList.remove('active')); document.getElementById(id).classList.add('active'); }
+
+        loadData();
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Speed Drill — SSC Math</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800;900&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0f0e17;
+            --surface: #1a1829;
+            --purple: #7c3aed;
+            --indigo: #4338ca;
+            --violet: #8b5cf6;
+            --pink: #ec4899;
+            --green: #10b981;
+            --red: #ef4444;
+            --amber: #f59e0b;
+            --text: #f1f0f9;
+            --muted: #6b7280;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Outfit', sans-serif;
+            min-height: 100vh;
+            overflow: hidden;
+        }
+
+        .screen {
+            display: none;
+            min-height: 100vh;
+        }
+
+        .screen.active {
+            display: flex;
+        }
+
+        /* ─── HOME ─── */
+        #home {
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            background: radial-gradient(ellipse at 30% 20%, rgba(124, 58, 237, 0.3), transparent 60%), radial-gradient(ellipse at 70% 80%, rgba(67, 56, 202, 0.3), transparent 60%), var(--bg);
+        }
+
+        .logo-text {
+            font-size: 4rem;
+            font-weight: 900;
+            background: linear-gradient(135deg, var(--violet), var(--pink));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: -2px;
+        }
+
+        .logo-sub {
+            color: var(--muted);
+            font-size: 1rem;
+            margin-bottom: 3rem;
+        }
+
+        .home-stats {
+            display: flex;
+            gap: 3rem;
+            margin-bottom: 3rem;
+        }
+
+        .hs-item {
+            text-align: center;
+        }
+
+        .hs-val {
+            font-size: 2rem;
+            font-weight: 800;
+        }
+
+        .hs-lbl {
+            font-size: 0.75rem;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .topic-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            justify-content: center;
+            margin-bottom: 2.5rem;
+            max-width: 500px;
+        }
+
+        .chip {
+            background: rgba(124, 58, 237, 0.15);
+            border: 1px solid rgba(124, 58, 237, 0.3);
+            border-radius: 999px;
+            padding: 0.35rem 1rem;
+            font-size: 0.8rem;
+            color: var(--violet);
+        }
+
+        .start-btn {
+            background: linear-gradient(135deg, var(--purple), var(--indigo));
+            color: #fff;
+            font-size: 1.1rem;
+            font-weight: 700;
+            padding: 1rem 3rem;
+            border: none;
+            border-radius: 999px;
+            cursor: pointer;
+            box-shadow: 0 4px 24px rgba(124, 58, 237, 0.4);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .start-btn:hover {
+            transform: scale(1.04);
+            box-shadow: 0 8px 32px rgba(124, 58, 237, 0.5);
+        }
+
+        /* ─── QUIZ ─── */
+        #quiz {
+            flex-direction: column;
+            align-items: center;
+            padding: 2rem 1rem;
+            justify-content: center;
+            min-height: 100vh;
+            background: radial-gradient(ellipse at 30% 20%, rgba(124, 58, 237, 0.2), transparent 50%), var(--bg);
+        }
+
+        .quiz-top {
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+            margin-bottom: 2.5rem;
+            width: 100%;
+            max-width: 680px;
+        }
+
+        .combo-display {
+            background: rgba(245, 158, 11, 0.1);
+            border: 1px solid rgba(245, 158, 11, 0.3);
+            border-radius: 999px;
+            padding: 0.4rem 1rem;
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: var(--amber);
+        }
+
+        .score-display {
+            font-size: 1.2rem;
+            font-weight: 800;
+            flex: 1;
+            text-align: right;
+        }
+
+        /* Timer Ring */
+        .timer-ring-wrap {
+            position: relative;
+            width: 80px;
+            height: 80px;
+            flex-shrink: 0;
+        }
+
+        .timer-ring {
+            transform: rotate(-90deg);
+        }
+
+        .ring-bg {
+            fill: none;
+            stroke: #1e1b2e;
+            stroke-width: 6;
+        }
+
+        .ring-fg {
+            fill: none;
+            stroke: var(--violet);
+            stroke-width: 6;
+            stroke-linecap: round;
+            transition: stroke-dashoffset 0.1s linear, stroke 0.5s;
+        }
+
+        .ring-fg.warn {
+            stroke: var(--amber);
+        }
+
+        .ring-fg.danger {
+            stroke: var(--red);
+        }
+
+        .timer-num {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.4rem;
+            font-weight: 800;
+        }
+
+        .quiz-card {
+            background: var(--surface);
+            border: 1px solid rgba(139, 92, 246, 0.2);
+            border-radius: 24px;
+            padding: 2.5rem;
+            width: 100%;
+            max-width: 680px;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 8px 40px rgba(0, 0, 0, 0.4);
+        }
+
+        .q-badge {
+            font-size: 0.75rem;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 1rem;
+        }
+
+        .q-body {
+            font-size: 1.2rem;
+            line-height: 1.7;
+        }
+
+        .q-img {
+            max-width: 100%;
+            border-radius: 12px;
+            margin-top: 1rem;
+        }
+
+        .options-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.75rem;
+            width: 100%;
+            max-width: 680px;
+        }
+
+        .opt-card {
+            background: var(--surface);
+            border: 2px solid rgba(139, 92, 246, 0.2);
+            border-radius: 16px;
+            padding: 1.25rem 1.5rem;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 500;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .opt-card:hover:not(:disabled) {
+            border-color: var(--violet);
+            background: rgba(139, 92, 246, 0.1);
+            transform: scale(1.02);
+        }
+
+        .opt-card.correct {
+            border-color: var(--green) !important;
+            background: rgba(16, 185, 129, 0.1) !important;
+        }
+
+        .opt-card.wrong {
+            border-color: var(--red) !important;
+            background: rgba(239, 68, 68, 0.1) !important;
+        }
+
+        .opt-card.timeout {
+            border-color: var(--amber) !important;
+            opacity: 0.7;
+        }
+
+        .opt-badge {
+            width: 28px;
+            height: 28px;
+            border-radius: 8px;
+            background: rgba(139, 92, 246, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: var(--violet);
+            flex-shrink: 0;
+        }
+
+        .opt-card.correct .opt-badge {
+            background: var(--green);
+            color: #fff;
+        }
+
+        .opt-card.wrong .opt-badge {
+            background: var(--red);
+            color: #fff;
+        }
+
+        /* Combo Pop */
+        .combo-pop {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 3rem;
+            font-weight: 900;
+            pointer-events: none;
+            animation: comboBurst 0.8s forwards;
+            z-index: 999;
+        }
+
+        @keyframes comboBurst {
+            0% {
+                opacity: 1;
+                transform: translate(-50%, -50%) scale(0.5)
+            }
+
+            40% {
+                transform: translate(-50%, -50%) scale(1.3)
+            }
+
+            100% {
+                opacity: 0;
+                transform: translate(-50%, -80%) scale(1)
+            }
+        }
+
+        /* Progress bar */
+        .progress-wrap {
+            width: 100%;
+            max-width: 680px;
+            margin-bottom: 1.5rem;
+        }
+
+        .progress-bar {
+            background: #1e1b2e;
+            border-radius: 999px;
+            height: 6px;
+        }
+
+        .progress-fill {
+            background: linear-gradient(90deg, var(--purple), var(--pink));
+            height: 100%;
+            border-radius: 999px;
+            transition: width 0.3s;
+        }
+
+        .progress-text {
+            font-size: 0.7rem;
+            color: var(--muted);
+            text-align: right;
+            margin-top: 0.25rem;
+        }
+
+        /* ─── RESULT ─── */
+        #result {
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            background: radial-gradient(ellipse at 50% 0%, rgba(124, 58, 237, 0.3), transparent 60%), var(--bg);
+        }
+
+        .result-card {
+            background: var(--surface);
+            border: 1px solid rgba(139, 92, 246, 0.2);
+            border-radius: 28px;
+            padding: 3rem;
+            max-width: 480px;
+            width: 100%;
+            text-align: center;
+        }
+
+        .result-emoji {
+            font-size: 4rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .result-title {
+            font-size: 1.75rem;
+            font-weight: 800;
+            margin-bottom: 0.5rem;
+        }
+
+        .result-sub {
+            color: var(--muted);
+            margin-bottom: 2rem;
+        }
+
+        .final-score {
+            font-size: 4rem;
+            font-weight: 900;
+            background: linear-gradient(135deg, var(--violet), var(--pink));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 0.5rem;
+        }
+
+        .final-score-label {
+            color: var(--muted);
+            font-size: 0.85rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-row {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .s-card {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.07);
+            border-radius: 14px;
+            padding: 1rem;
+        }
+
+        .s-val {
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        .s-lbl {
+            font-size: 0.7rem;
+            color: var(--muted);
+        }
+
+        .result-btns {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .btn-retry {
+            flex: 1;
+            background: linear-gradient(135deg, var(--purple), var(--indigo));
+            color: #fff;
+            font-weight: 700;
+            padding: 0.85rem;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 0.95rem;
+        }
+
+        .btn-quit {
+            flex: 1;
+            background: transparent;
+            color: var(--text);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 0.85rem;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 0.95rem;
+        }
+
+        @media(max-width:600px) {
+            .options-row {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- ══════════ HOME ══════════ -->
+    <div class="screen active" id="home">
+        <div style="text-align:center; padding:2rem;">
+            <div class="logo-text">SPEED DRILL</div>
+            <p class="logo-sub">30 seconds. One shot. No mercy.</p>
+            <div class="home-stats">
+                <div class="hs-item">
+                    <div class="hs-val" id="hs-best" style="color:var(--violet)">0</div>
+                    <div class="hs-lbl">Best Score</div>
+                </div>
+                <div class="hs-item">
+                    <div class="hs-val" id="hs-combo" style="color:var(--amber)">0</div>
+                    <div class="hs-lbl">Max Combo</div>
+                </div>
+                <div class="hs-item">
+                    <div class="hs-val" id="hs-runs">0</div>
+                    <div class="hs-lbl">Runs</div>
+                </div>
+            </div>
+            <div class="topic-chips">
+                <span class="chip">Number System</span><span class="chip">Simplification</span>
+                <span class="chip">Arithmetic</span><span class="chip">Quadratic Equations</span>
+            </div>
+            <button class="start-btn" onclick="startDrill()">START DRILL ⚡</button>
+        </div>
+    </div>
+
+    <!-- ══════════ QUIZ ══════════ -->
+    <div class="screen" id="quiz">
+        <div class="quiz-top">
+            <div class="timer-ring-wrap">
+                <svg class="timer-ring" width="80" height="80" viewBox="0 0 80 80">
+                    <circle class="ring-bg" cx="40" cy="40" r="33" />
+                    <circle class="ring-fg" id="ring-fg" cx="40" cy="40" r="33" stroke-dasharray="207.3"
+                        stroke-dashoffset="0" />
+                </svg>
+                <div class="timer-num" id="timer-num">30</div>
+            </div>
+            <div class="combo-display" id="combo-disp">COMBO x1</div>
+            <div class="score-display">Score: <span id="score-val">0</span></div>
+        </div>
+        <div class="progress-wrap">
+            <div class="progress-bar">
+                <div class="progress-fill" id="progress-fill" style="width:0%"></div>
+            </div>
+            <div class="progress-text" id="progress-text">0 / 20</div>
+        </div>
+        <div class="quiz-card">
+            <div class="q-badge" id="q-badge">QUESTION 1</div>
+            <div class="q-body" id="q-body"></div>
+            <img id="q-img" class="q-img" style="display:none">
+        </div>
+        <div class="options-row" id="options-row"></div>
+    </div>
+
+    <!-- ══════════ RESULT ══════════ -->
+    <div class="screen" id="result">
+        <div class="result-card">
+            <div class="result-emoji" id="res-emoji">🚀</div>
+            <div class="result-title" id="res-title">Drill Complete!</div>
+            <div class="result-sub" id="res-sub">Here are your results</div>
+            <div class="final-score" id="final-score">0</div>
+            <div class="final-score-label">Total Points</div>
+            <div class="stat-row">
+                <div class="s-card">
+                    <div class="s-val" id="r-correct" style="color:var(--green)">0</div>
+                    <div class="s-lbl">Correct</div>
+                </div>
+                <div class="s-card">
+                    <div class="s-val" id="r-wrong" style="color:var(--red)">0</div>
+                    <div class="s-lbl">Wrong</div>
+                </div>
+                <div class="s-card">
+                    <div class="s-val" id="r-timeout" style="color:var(--amber)">0</div>
+                    <div class="s-lbl">Timeout</div>
+                </div>
+                <div class="s-card">
+                    <div class="s-val" id="r-maxcombo" style="color:var(--violet)">0</div>
+                    <div class="s-lbl">Max Combo</div>
+                </div>
+            </div>
+            <div class="result-btns">
+                <button class="btn-retry" onclick="startDrill()">RETRY ⚡</button>
+                <button class="btn-quit" onclick="goHome()">HOME</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const TOPICS = ['simplification', 'number_system', 'arithmetic', 'quadratic_equations'];
+        const DRILL_SIZE = 20, TIME_PER_Q = 30;
+        const CIRC = 207.3;
+        let allData = [], drillQs = [], qIdx = 0, score = 0, combo = 1, maxCombo = 1;
+        let correct = 0, wrong = 0, timeouts = 0, answered = false;
+        let timerVal = TIME_PER_Q, timerInt = null;
+
+        const stats = JSON.parse(localStorage.getItem('sd_stats') || '{"best":0,"maxCombo":0,"runs":0}');
+
+        function resolveDiagramSrc(question) {
+            const raw = question?.diagram_image_path;
+            if (!raw) return null;
+            const path = String(raw).replace(/\\/g, '/');
+            const marker = 'temp_extraction/extracted_diagrams/';
+            const markerIndex = path.toLowerCase().indexOf(marker);
+            if (markerIndex >= 0) return `../../${path.slice(markerIndex)}`;
+            if (path.startsWith('temp_extraction/')) return `../../${path}`;
+            return path;
+        }
+
+        async function loadData() {
+            const r = await fetch('../../temp_extraction/ssc_math_database_images_clean.json');
+            allData = (await r.json()).filter(q => TOPICS.includes(q.topic));
+            document.getElementById('hs-best').textContent = stats.best;
+            document.getElementById('hs-combo').textContent = stats.maxCombo;
+            document.getElementById('hs-runs').textContent = stats.runs;
+        }
+
+        function startDrill() {
+            drillQs = [...allData].sort(() => Math.random() - 0.5).slice(0, DRILL_SIZE);
+            qIdx = 0; score = 0; combo = 1; maxCombo = 1; correct = 0; wrong = 0; timeouts = 0;
+            showScreen('quiz');
+            renderQ();
+        }
+
+        function renderQ() {
+            answered = false;
+            const q = drillQs[qIdx];
+            document.getElementById('q-badge').textContent = `QUESTION ${qIdx + 1} / ${DRILL_SIZE} — ${q.topic.replace('_', ' ').toUpperCase()}`;
+            document.getElementById('q-body').textContent = q.question_text || '';
+            const img = document.getElementById('q-img');
+            const diagramSrc = resolveDiagramSrc(q);
+            if (diagramSrc) { img.src = diagramSrc; img.style.display = 'block'; img.onerror = () => img.style.display = 'none'; }
+            else img.style.display = 'none';
+
+            const opts = q.options || {};
+            const row = document.getElementById('options-row');
+            row.innerHTML = '';
+            ['A', 'B', 'C', 'D'].forEach(l => {
+                if (!opts[l]) return;
+                const c = document.createElement('button');
+                c.className = 'opt-card'; c.setAttribute('data-l', l);
+                c.innerHTML = `<div class="opt-badge">${l}</div><span>${opts[l]}</span>`;
+                c.onclick = () => answer(l, q.correct_option);
+                row.appendChild(c);
+            });
+
+            document.getElementById('progress-fill').style.width = (qIdx / DRILL_SIZE * 100) + '%';
+            document.getElementById('progress-text').textContent = `${qIdx} / ${DRILL_SIZE}`;
+            document.getElementById('score-val').textContent = score;
+            document.getElementById('combo-disp').textContent = `COMBO x${combo}`;
+            startQTimer();
+        }
+
+        function startQTimer() {
+            clearInterval(timerInt); timerVal = TIME_PER_Q;
+            timerInt = setInterval(() => {
+                timerVal--;
+                const pct = timerVal / TIME_PER_Q;
+                document.getElementById('ring-fg').style.strokeDashoffset = CIRC * (1 - pct);
+                document.getElementById('timer-num').textContent = timerVal;
+                const fg = document.getElementById('ring-fg');
+                fg.className = 'ring-fg' + (timerVal <= 10 ? ' danger' : timerVal <= 20 ? ' warn' : '');
+                if (timerVal <= 0) { clearInterval(timerInt); onTimeout(); }
+            }, 1000);
+        }
+
+        function answer(chosen, correct_opt) {
+            if (answered) return; answered = true;
+            clearInterval(timerInt);
+            const btns = document.querySelectorAll('.opt-card');
+            btns.forEach(b => {
+                b.disabled = true;
+                const l = b.getAttribute('data-l');
+                if (l === correct_opt) b.classList.add('correct');
+            });
+
+            if (chosen === correct_opt) {
+                correct++;
+                const pts = 10 * combo + Math.round(timerVal / TIME_PER_Q * 5);
+                score += pts; combo++;
+                if (combo > maxCombo) maxCombo = combo;
+                if (combo >= 3) showComboPop(`🔥 ${combo}x COMBO!`);
+            } else {
+                wrong++;
+                document.querySelector(`[data-l="${chosen}"]`)?.classList.add('wrong');
+                combo = 1;
+            }
+            document.getElementById('score-val').textContent = score;
+            document.getElementById('combo-disp').textContent = `COMBO x${combo}`;
+            setTimeout(nextQ, 900);
+        }
+
+        function onTimeout() {
+            answered = true; timeouts++; combo = 1;
+            document.querySelectorAll('.opt-card').forEach(b => { b.disabled = true; if (b.getAttribute('data-l') === drillQs[qIdx].correct_option) b.classList.add('correct'); b.classList.add('timeout'); });
+            document.getElementById('combo-disp').textContent = `COMBO x${combo}`;
+            setTimeout(nextQ, 900);
+        }
+
+        function nextQ() { qIdx++; if (qIdx >= DRILL_SIZE) endDrill(); else renderQ(); }
+
+        function endDrill() {
+            if (score > stats.best) stats.best = score;
+            if (maxCombo > stats.maxCombo) stats.maxCombo = maxCombo;
+            stats.runs++;
+            localStorage.setItem('sd_stats', JSON.stringify(stats));
+            document.getElementById('final-score').textContent = score;
+            document.getElementById('r-correct').textContent = correct;
+            document.getElementById('r-wrong').textContent = wrong;
+            document.getElementById('r-timeout').textContent = timeouts;
+            document.getElementById('r-maxcombo').textContent = maxCombo;
+            const acc = Math.round(correct / DRILL_SIZE * 100);
+            document.getElementById('res-emoji').textContent = acc >= 80 ? '🚀' : acc >= 60 ? '⚡' : '💪';
+            document.getElementById('res-title').textContent = acc >= 80 ? 'Lightning Fast!' : acc >= 60 ? 'Good Drill!' : 'Keep Training!';
+            document.getElementById('res-sub').textContent = `Accuracy: ${acc}% | Best: ${stats.best} pts`;
+            showScreen('result');
+        }
+
+        function showComboPop(text) {
+            const el = document.createElement('div'); el.className = 'combo-pop'; el.textContent = text;
+            document.body.appendChild(el); setTimeout(() => el.remove(), 800);
+        }
+        function goHome() { clearInterval(timerInt); document.getElementById('hs-best').textContent = stats.best; document.getElementById('hs-combo').textContent = stats.maxCombo; document.getElementById('hs-runs').textContent = stats.runs; showScreen('home'); }
+        function showScreen(id) { document.querySelectorAll('.screen').forEach(s => s.classList.remove('active')); document.getElementById(id).classList.add('active'); }
+
+        loadData();
+    </script>
+</body>
+
+</html>
