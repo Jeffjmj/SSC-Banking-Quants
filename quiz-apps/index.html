@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SSC Math Quiz App</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="app">
+    <header class="header">
+      <h1>SSC Math Quiz</h1>
+      <p>Questions + options + answer + explanation from Siddhi dataset</p>
+    </header>
+
+    <section class="toolbar card">
+      <label>
+        Topic
+        <select id="topic-select"></select>
+      </label>
+      <button id="shuffle-btn" type="button">Shuffle</button>
+      <button id="show-answer-btn" type="button">Show Answer</button>
+      <div class="meta" id="meta">Loading...</div>
+    </section>
+
+    <main class="card" id="question-card">
+      <div class="question-head">
+        <span id="q-number">Q-</span>
+        <span class="topic-tag" id="q-topic">-</span>
+      </div>
+
+      <h2 id="q-text">Loading question...</h2>
+
+      <div id="options" class="options"></div>
+
+      <div id="answer-box" class="answer-box hidden">
+        <p><strong>Correct Option:</strong> <span id="answer-option">-</span></p>
+        <p id="answer-text"></p>
+      </div>
+
+      <div id="explanation-box" class="explanation-box hidden">
+        <h3>Explanation</h3>
+        <p id="explanation-text"></p>
+      </div>
+
+      <div class="nav">
+        <button id="prev-btn" type="button">Previous</button>
+        <button id="next-btn" type="button">Next</button>
+      </div>
+    </main>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
