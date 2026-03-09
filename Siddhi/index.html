@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SSC Math Mastery | Interactive Quiz App</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Outfit:wght@700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app-container">
+        <header>
+            <div class="logo">SSC MATH MASTER</div>
+            <div class="quiz-info" id="quiz-meta" style="display: none;">
+                <span id="timer">00:00</span>
+            </div>
+        </header>
+
+        <main class="main-layout" id="app-view">
+            <!-- Sidebar -->
+            <aside class="sidebar">
+                <div class="card">
+                    <h3>Explore Topics</h3>
+                    <p style="font-size: 0.8rem; color: var(--text-dim); margin-bottom: 1rem;">Select a category to begin</p>
+                    <ul class="topic-list" id="topic-list">
+                        <!-- Topics shim -->
+                        <div class="topic-item skeleton"></div>
+                        <div class="topic-item skeleton"></div>
+                        <div class="topic-item skeleton"></div>
+                    </ul>
+                </div>
+
+                <div class="card" id="progress-card" style="display: none;">
+                    <h3>Progress</h3>
+                    <div class="info-row">
+                        <span id="progress-text">Question 0 of 0</span>
+                        <span id="progress-percent">0%</span>
+                    </div>
+                    <div class="progress-bar-bg">
+                        <div class="progress-bar-fill" id="progress-bar"></div>
+                    </div>
+                    <div class="info-row" style="margin-top: 1.5rem;">
+                        <span>Accuracy</span>
+                        <span id="accuracy-val">0%</span>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- Question/Content Area -->
+            <section class="question-container" id="content-area">
+                <!-- Welcome View -->
+                <div id="welcome-view">
+                    <div class="card" style="padding: 3rem; text-align: center;">
+                        <h2 style="font-size: 2.5rem; margin-bottom: 1rem;">Master Every Math Topic</h2>
+                        <p style="color: var(--text-dim); margin-bottom: 2.5rem; font-size: 1.1rem;">
+                            Prepare for SSC with our interactive question bank. Over 1,300 curated problems with detailed explanations and diagrams.
+                        </p>
+                        
+                        <div class="stats-grid">
+                            <div class="stat-card">
+                                <span class="stat-value" id="stat-total-q">0</span>
+                                <span class="stat-label">Questions</span>
+                            </div>
+                            <div class="stat-card">
+                                <span class="stat-value" id="stat-total-topics">0</span>
+                                <span class="stat-label">Topics</span>
+                            </div>
+                            <div class="stat-card">
+                                <span class="stat-value" id="stat-diagrams">0</span>
+                                <span class="stat-label">Diagrams</span>
+                            </div>
+                        </div>
+
+                        <button class="btn btn-primary" style="padding: 1.5rem 3rem; font-size: 1.1rem;" onclick="app.startRandomQuiz()">
+                            Start Random Quiz
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Quiz View -->
+                <div id="quiz-view" style="display: none;">
+                    <div class="card question-card" id="question-card">
+                        <!-- Question Content -->
+                        <div class="question-main">
+                            <span class="tag" id="q-topic">Topic Name</span>
+                            <div class="question-text" id="q-text">
+                                Loading question...
+                            </div>
+
+                            <div class="options-grid" id="options-container">
+                                <!-- Options injected here -->
+                            </div>
+
+                            <div class="explanation" id="explanation-box" style="display: none;">
+                                <h4>Detailed Explanation</h4>
+                                <p id="explanation-text"></p>
+                            </div>
+                        </div>
+
+                        <!-- Diagram Side -->
+                        <div class="diagram-side" id="diagram-side" style="display: none;">
+                            <div class="diagram-container">
+                                <img src="" alt="Diagram" id="q-diagram">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="controls">
+                        <button class="btn btn-secondary" onclick="app.prevQuestion()" id="prev-btn">Previous</button>
+                        <button class="btn btn-primary" onclick="app.nextQuestion()" id="next-btn">Next Question</button>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Scripts -->
+    <script src="app.js"></script>
+</body>
+</html>

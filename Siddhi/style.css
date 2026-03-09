@@ -1,0 +1,410 @@
+:root {
+    --primary: #7c4dff;
+    --primary-glow: rgba(124, 77, 255, 0.4);
+    --secondary: #00e5ff;
+    --secondary-glow: rgba(0, 229, 255, 0.3);
+    --bg-dark: #05050a;
+    --bg-card: rgba(255, 255, 255, 0.05);
+    --glass-border: rgba(255, 255, 255, 0.1);
+    --text-main: #f8f9fa;
+    --text-dim: #b0b0b0;
+    --success: #00e676;
+    --error: #ff1744;
+    --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Inter', sans-serif;
+    background: var(--bg-dark);
+    color: var(--text-main);
+    line-height: 1.6;
+    overflow-x: hidden;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+h1,
+h2,
+h3 {
+    font-family: 'Outfit', sans-serif;
+    letter-spacing: -0.02em;
+}
+
+/* Base Layout */
+.app-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 2rem;
+    width: 100%;
+    flex: 1;
+}
+
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 3rem;
+    padding: 1.5rem 0;
+    border-bottom: 1px solid var(--glass-border);
+}
+
+.logo {
+    font-size: 1.8rem;
+    font-weight: 700;
+    background: linear-gradient(45deg, var(--primary), var(--secondary));
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+/* Sidebar & Filters */
+.main-layout {
+    display: grid;
+    grid-template-columns: 320px 1fr;
+    gap: 2.5rem;
+}
+
+.sidebar {
+    position: sticky;
+    top: 2rem;
+    height: calc(100vh - 4rem);
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.card {
+    background: var(--bg-card);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid var(--glass-border);
+    border-radius: 20px;
+    padding: 1.5rem;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+
+.topic-list {
+    list-style: none;
+    max-height: 400px;
+    overflow-y: auto;
+    padding-right: 10px;
+}
+
+.topic-list::-webkit-scrollbar {
+    width: 4px;
+}
+
+.topic-list::-webkit-scrollbar-thumb {
+    background: var(--glass-border);
+    border-radius: 10px;
+}
+
+.topic-item {
+    padding: 0.8rem 1rem;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: var(--transition);
+    color: var(--text-dim);
+    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.topic-item:hover,
+.topic-item.active {
+    background: rgba(124, 77, 255, 0.15);
+    color: var(--text-main);
+    border-left: 4px solid var(--primary);
+}
+
+.topic-count {
+    background: var(--glass-border);
+    padding: 2px 8px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+}
+
+/* Question Area */
+.question-container {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+.question-card {
+    min-height: 400px;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 2rem;
+}
+
+.question-card.has-diagram {
+    grid-template-columns: 1fr 1fr;
+}
+
+@media (max-width: 1100px) {
+    .main-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .question-card.has-diagram {
+        grid-template-columns: 1fr;
+    }
+
+    .sidebar {
+        position: relative;
+        height: auto;
+        top: 0;
+    }
+}
+
+.question-header {
+    margin-bottom: 2rem;
+}
+
+.tag {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 6px;
+    background: rgba(0, 229, 255, 0.1);
+    color: var(--secondary);
+    font-size: 0.75rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.question-text {
+    font-size: 1.25rem;
+    font-weight: 500;
+    margin-bottom: 2rem;
+    color: var(--text-main);
+}
+
+/* Diagram Styling */
+.diagram-container {
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 15px;
+    padding: 1rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border: 1px dashed var(--glass-border);
+    min-height: 300px;
+}
+
+.diagram-container img {
+    max-width: 100%;
+    max-height: 500px;
+    border-radius: 10px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+    background: white;
+    /* Math diagrams usually have white backgrounds */
+}
+
+/* Options Scaling */
+.options-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1rem;
+}
+
+.option-btn {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--glass-border);
+    padding: 1.2rem 1.5rem;
+    border-radius: 15px;
+    text-align: left;
+    cursor: pointer;
+    transition: var(--transition);
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    font-size: 1rem;
+    color: var(--text-dim);
+    position: relative;
+    overflow: hidden;
+}
+
+.option-btn:hover {
+    background: rgba(255, 255, 255, 0.07);
+    border-color: var(--primary);
+    transform: translateX(5px);
+}
+
+.option-prefix {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: var(--glass-border);
+    color: var(--text-main);
+    font-weight: 700;
+    flex-shrink: 0;
+}
+
+.option-btn.correct {
+    border-color: var(--success);
+    background: rgba(0, 230, 118, 0.1);
+    color: var(--text-main);
+}
+
+.option-btn.wrong {
+    border-color: var(--error);
+    background: rgba(255, 23, 68, 0.1);
+}
+
+.option-btn.correct .option-prefix {
+    background: var(--success);
+}
+
+.option-btn.wrong .option-prefix {
+    background: var(--error);
+}
+
+/* Progress Section */
+.info-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+    font-size: 0.85rem;
+    color: var(--text-dim);
+}
+
+.progress-bar-bg {
+    height: 8px;
+    background: var(--glass-border);
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.progress-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--primary), var(--secondary));
+    width: 0%;
+    transition: width 0.5s ease;
+}
+
+/* Controls */
+.controls {
+    display: flex;
+    gap: 1rem;
+    justify-content: flex-end;
+}
+
+.btn {
+    padding: 12px 24px;
+    border-radius: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition);
+    border: none;
+    font-family: inherit;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    color: white;
+    box-shadow: 0 4px 15px var(--primary-glow);
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px var(--primary-glow);
+}
+
+.btn-secondary {
+    background: var(--glass-border);
+    color: var(--text-main);
+}
+
+.btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none !important;
+}
+
+/* Explanation */
+.explanation {
+    margin-top: 2rem;
+    padding-top: 2rem;
+    border-top: 1px solid var(--glass-border);
+    animation: fadeIn 0.5s ease;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.explanation h4 {
+    color: var(--secondary);
+    margin-bottom: 0.8rem;
+}
+
+.explanation p {
+    color: var(--text-dim);
+    font-size: 0.95rem;
+}
+
+/* Dashboard Stats */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2.5rem;
+}
+
+.stat-card {
+    text-align: center;
+}
+
+.stat-value {
+    font-size: 2rem;
+    font-weight: 700;
+    display: block;
+    margin-bottom: 0.5rem;
+}
+
+.stat-label {
+    color: var(--text-dim);
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+}
+
+/* Animations */
+.skeleton {
+    background: linear-gradient(90deg, rgba(255, 255, 255, 0.05) 25%, rgba(255, 255, 255, 0.1) 50%, rgba(255, 255, 255, 0.05) 75%);
+    background-size: 200% 100%;
+    animation: loading 1.5s infinite;
+}
+
+@keyframes loading {
+    from {
+        background-position: 200% 0;
+    }
+
+    to {
+        background-position: -200% 0;
+    }
+}
